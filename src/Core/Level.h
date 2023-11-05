@@ -19,6 +19,11 @@ public:
 
 	virtual void Render();
 
+private:
+
+	sf::Clock elapsedTimeClock;
+
+#pragma region ECS
 	/* ECS */
 public:
 
@@ -29,9 +34,11 @@ public:
 	}
 
 	template<typename ComponentType, typename... Args>
-	void EmplaceComponent(Entity entityID, Args&&... args)
+	ComponentType& EmplaceComponent(Entity entityID, Args&&... args)
 	{
-		m_components[std::type_index(typeid(ComponentType))][entityID] = std::make_shared<ComponentType>(std::forward<Args>(args)...);
+		ComponentType comp = std::make_shared<ComponentType>(std::forward<Args>(args)...);
+		m_components[std::type_index(typeid(ComponentType))][entityID] = comp;
+		return comp;
 	}
 
 	template<typename ComponentType>
@@ -73,6 +80,7 @@ public:
 		m_entities.push_back(++lastEntityID);
 		AddComponent<TransformComponent>(lastEntityID, {0, 0});
 		AddComponent<TagComponent>(lastEntityID, name);
+		AddComponent<UUIDComponent>(lastEntityID, elapsedTimeClock.getElapsedTime().asMilliseconds());
 		return lastEntityID;
 	}
 
@@ -85,9 +93,11 @@ public:
 	}
 
 private:
-	int lastEntityID = -1;
+
+	uint32_t lastEntityID = -1;
 	std::unordered_map<std::type_index, std::unordered_map<Entity, std::shared_ptr<void>>> m_components;
 	std::vector<Entity> m_entities;
 
+#pragma endregion ECS
 };
 

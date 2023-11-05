@@ -2,4 +2,4 @@
 
 #include <cstdint>
 
-typedef int32_t Entity;
+typedef uint32_t Entity;

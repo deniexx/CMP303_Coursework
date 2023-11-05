@@ -4,24 +4,33 @@
 
 void Level::Begin()
 {
-	Entity ent = CreateEntity("Player");
+	for (int i = 0; i < 10; ++i)
+	{
+		std::string playerName = "Player" + std::to_string(i);
+		Entity ent = CreateEntity(playerName);
+		AddComponent<SpriteComponent>(ent, sf::Color::Red);
+		SpriteComponent& comp = GetComponent<SpriteComponent>(ent);
+		sf::Texture texture;
+		texture.create(32, 32);
+		comp.m_sprite.setTexture(texture, true);
 
-	AddComponent<SpriteComponent>(ent, sf::Color::Red);
+		TransformComponent& tranComp = GetComponent<TransformComponent>(ent);
+		UUIDComponent& uuidComp = GetComponent<UUIDComponent>(ent);
+		TagComponent& tagComp = GetComponent<TagComponent>(ent);
 
-	SpriteComponent& comp = GetComponent<SpriteComponent>(ent);
-	sf::Texture texture;
-	texture.create(32, 32);
-	comp.m_sprite.setTexture(texture, true);
+		tranComp.m_x = 0 + (i * 90);
+		tranComp.m_y = 0 + (i * 33);
+		std::cout << tagComp.m_tag << ": " << uuidComp.m_uuid << "\n";
+	}
 }
 
 void Level::Update(float deltaTime)
 {
 	for (auto entity : m_entities)
 	{
-        std::cout << deltaTime << "\n";
 		TransformComponent& comp = GetComponent<TransformComponent>(entity);
-		comp.m_x += deltaTime * 5.f;
-		comp.m_y += deltaTime * 5.f;
+		comp.m_x += deltaTime * 10.f;
+		comp.m_y += deltaTime * 10.f;
 	}
 }
 

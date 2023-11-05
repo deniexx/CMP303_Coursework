@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SFML/Graphics.hpp"
+#include <random>
 
 struct TransformComponent
 {
@@ -33,4 +34,22 @@ struct TagComponent
 	TagComponent(std::string tag) : m_tag(tag) {}
 
 	std::string m_tag;
+};
+
+struct UUIDComponent
+{
+	UUIDComponent() = delete;
+	UUIDComponent(uint64_t elapsedTime)
+	{
+		static std::random_device rd;
+		static std::mt19937_64 generator(rd());
+		static std::uniform_int_distribution<uint64_t> uniformDistribution;
+
+		uint64_t part1 = uniformDistribution(generator);
+		uint64_t part2 = uniformDistribution(generator);
+
+		m_uuid = (part1 << 64) | part2;
+	}
+
+	uint64_t m_uuid;
 };

@@ -12,3 +12,5 @@ bin-int/
 # Extras
 .clangd
 .vs/
+.idea/
+.vscode/

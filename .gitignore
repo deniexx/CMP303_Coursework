@@ -1,0 +1,14 @@
+# Visual Studio ignores
+
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# Folders
+bin/
+bin-int/
+
+# Extras
+.clangd
+.vs/

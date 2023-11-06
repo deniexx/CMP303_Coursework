@@ -36,9 +36,9 @@ public:
 	template<typename ComponentType, typename... Args>
 	ComponentType& EmplaceComponent(Entity entityID, Args&&... args)
 	{
-		ComponentType comp = std::make_shared<ComponentType>(std::forward<Args>(args)...);
+		std::shared_ptr<ComponentType> comp = std::make_shared<ComponentType>(std::forward<Args>(args)...);
 		m_components[std::type_index(typeid(ComponentType))][entityID] = comp;
-		return comp;
+		return *comp;
 	}
 
 	template<typename ComponentType>
@@ -94,7 +94,20 @@ public:
 
 private:
 
-	uint32_t lastEntityID = -1;
+	// @TODO: IDs 0-5(6), will be for players so we should start at 5
+	// @TODO: We will only create players, if the start game has been called, or the server has sent us a create a player event
+	// @TODO: Server/Client server systems that do work on the components
+	// @TODO: Figure out what events should we call and their IDs, make sure they are well defined and get ReplicatedStructs to hold that data!
+	// @TODO: Variable length messages for strings?
+	// @TODO: Maybe figure out more of the game architecture before proceeding
+	// @TODO: Figure out animation
+	// ---------------------------- FOR THIS WEEK ----------------------------
+	// @TODO: Start with rendering the world and platforms
+	// @TODO: Implement the physics and input systems and get players moving on the screen with velocity
+	// @TODO: Add hit system and hit components that would check if you have been hit or not and the hit system will deal with the hits accordingly
+	// @TODO: ApplyImpulse on enemies after being hit
+	// @TODO: Good enough for the week
+	uint32_t lastEntityID = 5;
 	std::unordered_map<std::type_index, std::unordered_map<Entity, std::shared_ptr<void>>> m_components;
 	std::vector<Entity> m_entities;
 

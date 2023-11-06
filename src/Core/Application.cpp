@@ -4,7 +4,7 @@ void Application::StartUp()
 {
 	Instance = this;
 
-	window = new sf::RenderWindow(sf::VideoMode(1280, 720), "Alehandro Mix");
+	window = std::make_shared<sf::RenderWindow>(sf::VideoMode(1280, 720), "Alehandro Mix");
 	sf::Clock deltaClock;
 
 	window->setFramerateLimit(60);
@@ -16,17 +16,17 @@ void Application::StartUp()
 	while (window->isOpen())
 	{
 		float deltaTime = deltaClock.restart().asSeconds();
-		window->clear();
 		PollEvents(window);
 		currentLevel->Update(deltaTime);
 
+		window->clear(sf::Color(100, 149, 237));
 		window->setActive();
 		currentLevel->Render();
 		window->display();
 	}
 }
 
-void Application::PollEvents(sf::RenderWindow* window)
+void Application::PollEvents(std::shared_ptr<sf::RenderWindow> window)
 {
 	sf::Event currentEvent;
 	while (window->pollEvent(currentEvent))

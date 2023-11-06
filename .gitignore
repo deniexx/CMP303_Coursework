@@ -9,6 +9,8 @@
 bin/
 bin-int/
 
+!vendor/SFML/bin
+
 # Extras
 .clangd
 .vs/

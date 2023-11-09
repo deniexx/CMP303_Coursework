@@ -15,12 +15,14 @@ public:
 	 */
 	void StartUp();
 
+	std::shared_ptr<Level> GetCurrentLevel();
+
 	/* Update Loops*/
 private:
 
-	std::shared_ptr<sf::RenderWindow> window;
+	std::shared_ptr<sf::RenderWindow> m_window;
 
-	std::shared_ptr<Level> currentLevel;
+	std::shared_ptr<Level> m_currentLevel;
 
 	void PollEvents(std::shared_ptr<sf::RenderWindow> window);
 	void UpdateNetwork();

@@ -4,26 +4,31 @@ void Application::StartUp()
 {
 	Instance = this;
 
-	window = std::make_shared<sf::RenderWindow>(sf::VideoMode(1280, 720), "Alehandro Mix");
+	m_window = std::make_shared<sf::RenderWindow>(sf::VideoMode(1280, 720), "Alehandro Mix");
 	sf::Clock deltaClock;
 
-	window->setFramerateLimit(60);
-	window->setVerticalSyncEnabled(false);
+	m_window->setFramerateLimit(60);
+	m_window->setVerticalSyncEnabled(false);
 
-	currentLevel = std::make_shared<Level>();
-	currentLevel->Begin();
+	m_currentLevel = std::make_shared<Level>();
+	m_currentLevel->Begin();
 
-	while (window->isOpen())
+	while (m_window->isOpen())
 	{
 		float deltaTime = deltaClock.restart().asSeconds();
-		PollEvents(window);
-		currentLevel->Update(deltaTime);
+		PollEvents(m_window);
+		m_currentLevel->Update(deltaTime);
 
-		window->clear(sf::Color(100, 149, 237));
-		window->setActive();
-		currentLevel->Render();
-		window->display();
+		m_window->clear(sf::Color(100, 149, 237));
+		m_window->setActive();
+		m_currentLevel->Render();
+		m_window->display();
 	}
+}
+
+std::shared_ptr<Level> Application::GetCurrentLevel()
+{
+	return m_currentLevel;
 }
 
 void Application::PollEvents(std::shared_ptr<sf::RenderWindow> window)

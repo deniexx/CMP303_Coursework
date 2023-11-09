@@ -2,20 +2,27 @@
 
 #include "CoreDefines.h"
 
+#include <stdint.h>
+#include <string>
 #include <unordered_map>
 #include <typeindex>
 #include <memory>
 #include <vector>
 #include "../Components/Components.h"
+#include "../Systems/ISystem.h"
+//#include "../Systems/ISystem.h"
 
 class Level
 {
 
 	/* Interface */
 public:
+	virtual ~Level() = default;
 
 	virtual void Begin();
 	virtual void Update(float deltaTime);
+	virtual void ClientUpdate();
+	virtual void ServerUpdate();
 
 	virtual void Render();
 
@@ -56,6 +63,22 @@ public:
 	}
 
 	template<typename ComponentType>
+	Entity FindEntityFromComponent(const ComponentType& component)
+	{
+		auto& componentMap = m_components[std::type_index(typeid(ComponentType))];
+		for (const auto& ceMapEntry : componentMap)
+		{
+			auto& storedComponent = *std::static_pointer_cast<ComponentType>(ceMapEntry.second);
+			if (component = storedComponent)
+			{
+				return ceMapEntry.first;
+			}
+		}
+
+		return -1;
+	}
+
+	template<typename ComponentType>
 	std::vector<ComponentType> GetAllComponents()
 	{
 		std::vector<ComponentType> result;
@@ -75,12 +98,25 @@ public:
 		componentMap.erase(entityID);
 	}
 
+	std::vector<Entity> GetAllPlayerEntities()
+	{
+		std::vector<Entity> toReturn;
+		for (uint8_t i = 1; i < playerCount + 1; ++i)
+		{
+			toReturn.push_back(i);
+		}
+
+		return toReturn;
+	}
+
+	Entity CreatePlayer(int playerID = -1, std::string name = std::string());
+
 	Entity CreateEntity(std::string name = std::string())
 	{
 		m_entities.push_back(++lastEntityID);
-		AddComponent<TransformComponent>(lastEntityID, {0, 0});
-		AddComponent<TagComponent>(lastEntityID, name);
-		AddComponent<UUIDComponent>(lastEntityID, elapsedTimeClock.getElapsedTime().asMilliseconds());
+	    EmplaceComponent<TransformComponent>(lastEntityID, 0, 0);
+		EmplaceComponent<TagComponent>(lastEntityID, name);
+		EmplaceComponent<UUIDComponent>(lastEntityID, elapsedTimeClock.getElapsedTime().asMilliseconds());
 		return lastEntityID;
 	}
 
@@ -94,7 +130,7 @@ public:
 
 private:
 
-	// @TODO: IDs 0-5(6), will be for players so we should start at 5
+	// @TODO: IDs 1-6(6), will be for players so we should start at 6
 	// @TODO: We will only create players, if the start game has been called, or the server has sent us a create a player event
 	// @TODO: Server/Client server systems that do work on the components
 	// @TODO: Figure out what events should we call and their IDs, make sure they are well defined and get ReplicatedStructs to hold that data!
@@ -108,9 +144,13 @@ private:
 	// @TODO: ApplyImpulse on enemies after being hit
 	// @TODO: Good enough for the week
 	// @TODO: Possibly implement a second player on the screen
-	uint32_t lastEntityID = 5;
+    // This will be pre-incremented, starting from 1 as 0 will be our networking entity, handling the network messages
+    uint32_t lastPlayerID = 0; // Only used on the server
+	uint8_t playerCount = 0; // The number of players, used for some systems
+	uint32_t lastEntityID = 6;
 	std::unordered_map<std::type_index, std::unordered_map<Entity, std::shared_ptr<void>>> m_components;
 	std::vector<Entity> m_entities;
+	std::vector<std::unique_ptr<ISystem>> m_systems;
 
 #pragma endregion ECS
 };

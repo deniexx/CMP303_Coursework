@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SFML/System/Vector2.hpp"
 #include "SFML/Graphics.hpp"
 #include <random>
 
@@ -16,8 +17,7 @@ struct SpriteComponent
 {
 	SpriteComponent() = default;
 	SpriteComponent(SpriteComponent& other) = default;
-	SpriteComponent(sf::Sprite& sprite) : m_sprite(sprite) {}
-	SpriteComponent(sf::Sprite sprite) : m_sprite(sprite) {}
+	SpriteComponent(sf::Sprite sprite) : m_sprite(std::move(sprite)) {}
 	SpriteComponent(sf::Color colour)
 	{
 		m_sprite = sf::Sprite(sf::Texture());
@@ -30,8 +30,8 @@ struct SpriteComponent
 struct TagComponent
 {
 	TagComponent() = default;
-	TagComponent(TagComponent & other) = default;
-	TagComponent(std::string tag) : m_tag(tag) {}
+	TagComponent(TagComponent&  other) = default;
+	TagComponent(std::string tag) : m_tag(std::move(tag)) {}
 
 	std::string m_tag;
 };
@@ -52,4 +52,24 @@ struct UUIDComponent
 	}
 
 	uint64_t m_uuid;
+};
+
+struct NetworkPlayerComponent
+{
+	NetworkPlayerComponent() = delete;
+	NetworkPlayerComponent(NetworkPlayerComponent& other) = delete;
+	NetworkPlayerComponent(PlayerConnectionType connectionType) : m_connectionType(connectionType) {}
+
+	enum PlayerConnectionType m_connectionType = PlayerConnectionType::None;
+};
+
+struct InputComponent
+{
+	InputComponent() = default;
+
+	int8_t m_moveInput = 0;
+	int8_t m_upDownNavigateInput = 0;
+	uint8_t m_jumpInput = 0;
+	uint8_t m_attackInput = 0;
+	uint8_t m_confirmInput = 0;
 };

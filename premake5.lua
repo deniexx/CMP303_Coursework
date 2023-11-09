@@ -1,3 +1,5 @@
+require "export-compile-commands"
+
 workspace "DenisDimitrovCoursework"
     architecture "x64"
     configurations { "Debug", "Release"}

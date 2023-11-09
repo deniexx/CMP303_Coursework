@@ -107,6 +107,7 @@ private:
 	// @TODO: Add hit system and hit components that would check if you have been hit or not and the hit system will deal with the hits accordingly
 	// @TODO: ApplyImpulse on enemies after being hit
 	// @TODO: Good enough for the week
+	// @TODO: Possibly implement a second player on the screen
 	uint32_t lastEntityID = 5;
 	std::unordered_map<std::type_index, std::unordered_map<Entity, std::shared_ptr<void>>> m_components;
 	std::vector<Entity> m_entities;

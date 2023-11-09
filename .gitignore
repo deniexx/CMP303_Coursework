@@ -8,6 +8,8 @@
 # Folders
 bin/
 bin-int/
+build/
+export-compile-commands/
 
 !vendor/SFML/bin
 
@@ -16,3 +18,4 @@ bin-int/
 .vs/
 .idea/
 .vscode/
+.cache/

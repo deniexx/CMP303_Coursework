@@ -27,12 +27,12 @@ void InputSystem::UpdateSystem(float deltaTime)
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A))
         {
             bUpdate |= comp.m_moveInput != -1;
-            comp.m_moveInput -= 1;
+            comp.m_moveInput = -1;
         }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D))
         {
             bUpdate |= comp.m_moveInput != 1;
-            comp.m_moveInput += 1;
+            comp.m_moveInput = 1;
         }
 		else
 		{
@@ -42,12 +42,12 @@ void InputSystem::UpdateSystem(float deltaTime)
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::W))
         {
             bUpdate |= comp.m_upDownNavigateInput != -1;
-            comp.m_upDownNavigateInput -= 1;
+            comp.m_upDownNavigateInput = -1;
         }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S))
         {
             bUpdate |= comp.m_upDownNavigateInput != 1;
-            comp.m_upDownNavigateInput += 1;
+            comp.m_upDownNavigateInput = 1;
         }
         else
         {

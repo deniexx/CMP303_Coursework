@@ -30,7 +30,6 @@ private:
 
     void UpdateMovementComponent(Entity player, std::shared_ptr<Level> level);
     void CalculatePhysics(Entity player, std::shared_ptr<Level> level, float deltaTime);
-    void CheckForCollision(std::vector<Entity>& players);
 
     bool IsPlayerOnGround(const TransformComponent& transformComp);
     bool IsFalling(const MovementComponent& movementComp);

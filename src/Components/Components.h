@@ -80,11 +80,20 @@ struct MovementComponent
 	sf::Vector2f m_inputVelocity = sf::Vector2f(0.f, 0.f);
 	sf::Vector2f m_impulseToBeApplied = sf::Vector2f(0.f, 0.f);
 	sf::Vector2f m_currentVelocity = sf::Vector2f(0.f, 0.f);
-	float m_maxSpeed = 650;
-	float m_acceleration = 300;
+	float m_maxSpeed = 300;
+	float m_acceleration = 150;
 	float m_velocityInterp = 0;
 	float m_jumpStrength = 250;
-	float m_lateralFriction = 2.f;
+	float m_lateralFriction = 0.75f;
 	float m_airControl = 0.4f;
-	float m_fallingSpeedMultiplier = 1.5f;
+	float m_fallingSpeedMultiplier = 1.f;
+};
+
+struct HitComponent
+{
+	HitComponent() = default;
+
+	float m_damageMultiplier = 1.f;
+	float m_impuseOnHit = 250.f;
+	sf::Vector2f m_attackSize = sf::Vector2f(48.f, 48.f);
 };

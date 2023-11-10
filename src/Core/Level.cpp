@@ -3,11 +3,13 @@
 #include <iostream>
 #include "../Systems/InputSystem.h"
 #include "../Systems/PhysicsSystem.h"
+#include "../Systems/HitSystem.h"
 
 void Level::Begin()
 {
 	m_systems.push_back(std::make_unique<InputSystem>());
 	m_systems.push_back(std::make_unique<PhysicsSystem>());
+	m_systems.push_back(std::make_unique<HitSystem>());
 
 	for (int i = 1; i < 3; ++i)
 	{
@@ -73,6 +75,7 @@ Entity Level::CreatePlayer(int playerID, std::string name)
 	EmplaceComponent<TagComponent>(internalPID, name);
 	EmplaceComponent<UUIDComponent>(internalPID, elapsedTimeClock.getElapsedTime().asMilliseconds());
 	EmplaceComponent<MovementComponent>(internalPID);
+	EmplaceComponent<HitComponent>(internalPID);
 	PlayerConnectionType type;
 
 	if (isServer)

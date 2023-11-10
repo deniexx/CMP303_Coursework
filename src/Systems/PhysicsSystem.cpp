@@ -2,8 +2,6 @@
 #include "../Core/Application.h"
 #include "../Utilities/MathUtils.h"
 
-#include <iostream>
-
 void PhysicsSystem::BeginSystem()
 {
     // @TODO: maybe something will be needed
@@ -23,8 +21,6 @@ void PhysicsSystem::UpdateSystem(float deltaTime)
         UpdateMovementComponent(player, level);
         CalculatePhysics(player, level, deltaTime);
     }
-
-    CheckForCollision(players);
 }
 
 void PhysicsSystem::UpdateMovementComponent(Entity player, std::shared_ptr<Level> level)
@@ -49,8 +45,8 @@ void PhysicsSystem::CalculatePhysics(Entity player, std::shared_ptr<Level> level
         movementComp.m_currentVelocity.y -= movementComp.m_inputVelocity.y;
     }
 
-	movementComp.m_currentVelocity.x += movementComp.m_inputVelocity.x * movementComp.m_acceleration * horizontalMovementMultiplier;
-	movementComp.m_currentVelocity.x /= movementComp.m_lateralFriction;
+	movementComp.m_currentVelocity.x += (movementComp.m_inputVelocity.x * horizontalMovementMultiplier) * movementComp.m_acceleration;
+    movementComp.m_currentVelocity.x *= movementComp.m_lateralFriction;
 	movementComp.m_currentVelocity.x = Clamp<float>(movementComp.m_currentVelocity.x, -movementComp.m_maxSpeed, movementComp.m_maxSpeed);
 
     movementComp.m_currentVelocity.y += m_gravity;
@@ -60,6 +56,8 @@ void PhysicsSystem::CalculatePhysics(Entity player, std::shared_ptr<Level> level
         movementComp.m_currentVelocity.y *= movementComp.m_fallingSpeedMultiplier;
     }
 
+    movementComp.m_currentVelocity += movementComp.m_impulseToBeApplied * deltaTime;
+    movementComp.m_impulseToBeApplied = sf::Vector2f(0.f, 0.f);
 
     transComp.m_x += movementComp.m_currentVelocity.x * deltaTime;
     transComp.m_y += movementComp.m_currentVelocity.y * deltaTime;
@@ -77,11 +75,6 @@ void PhysicsSystem::CalculatePhysics(Entity player, std::shared_ptr<Level> level
     }
 
     movementComp.m_inputVelocity = sf::Vector2f(0.f, 0.f);
-}
-
-void PhysicsSystem::CheckForCollision(std::vector<Entity>& players)
-{
-
 }
 
 bool PhysicsSystem::IsPlayerOnGround(const TransformComponent& transformComp)

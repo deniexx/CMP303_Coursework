@@ -1,6 +1,5 @@
 #pragma once
 
-#include "SFML/System/Vector2.hpp"
 #include "SFML/Graphics.hpp"
 #include <random>
 
@@ -67,9 +66,25 @@ struct InputComponent
 {
 	InputComponent() = default;
 
-	int8_t m_moveInput = 0;
-	int8_t m_upDownNavigateInput = 0;
-	uint8_t m_jumpInput = 0;
-	uint8_t m_attackInput = 0;
-	uint8_t m_confirmInput = 0;
+	int32_t m_moveInput = 0;
+	int32_t m_upDownNavigateInput = 0;
+	int32_t m_jumpInput = 0;
+	int32_t m_attackInput = 0;
+	int32_t m_confirmInput = 0;
+};
+
+struct MovementComponent
+{
+	MovementComponent() = default;
+
+	sf::Vector2f m_inputVelocity = sf::Vector2f(0.f, 0.f);
+	sf::Vector2f m_impulseToBeApplied = sf::Vector2f(0.f, 0.f);
+	sf::Vector2f m_currentVelocity = sf::Vector2f(0.f, 0.f);
+	float m_maxSpeed = 650;
+	float m_acceleration = 300;
+	float m_velocityInterp = 0;
+	float m_jumpStrength = 250;
+	float m_lateralFriction = 2.f;
+	float m_airControl = 0.4f;
+	float m_fallingSpeedMultiplier = 1.5f;
 };

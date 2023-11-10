@@ -28,35 +28,23 @@ void InputSystem::UpdateSystem(float deltaTime)
         {
             bUpdate |= comp.m_moveInput != -1;
             comp.m_moveInput -= 1;
-            std::cout << "MoveX: " << -1 << std::endl;
         }
-        else
-        {
-            bUpdate |= comp.m_moveInput != 0;
-            comp.m_moveInput = 0;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D))
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D))
         {
             bUpdate |= comp.m_moveInput != 1;
             comp.m_moveInput += 1;
-            std::cout << "MoveX: " << 1 << std::endl;
         }
-        else
-        {
-            bUpdate |= comp.m_moveInput != 0;
-            comp.m_moveInput = 0;
-        }
+		else
+		{
+			bUpdate |= comp.m_moveInput != 0;
+			comp.m_moveInput = 0;
+		}
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::W))
         {
             bUpdate |= comp.m_upDownNavigateInput != -1;
             comp.m_upDownNavigateInput -= 1;
         }
-        else
-        {
-            bUpdate |= comp.m_upDownNavigateInput != 0;
-            comp.m_upDownNavigateInput = 0;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S))
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S))
         {
             bUpdate |= comp.m_upDownNavigateInput != 1;
             comp.m_upDownNavigateInput += 1;
@@ -96,7 +84,7 @@ void InputSystem::UpdateSystem(float deltaTime)
             comp.m_confirmInput = 0;
         }
 
-        // After input has been processed, break (we do not need to check other players, because we have assigned input to the local player)
+        // @FIXME: This is wrong, we should check if the player is local or not and then process the input, because ideally all players will have an input component
         break;
     }
 }

@@ -2,10 +2,12 @@
 #include "Application.h"
 #include <iostream>
 #include "../Systems/InputSystem.h"
+#include "../Systems/PhysicsSystem.h"
 
 void Level::Begin()
 {
 	m_systems.push_back(std::make_unique<InputSystem>());
+	m_systems.push_back(std::make_unique<PhysicsSystem>());
 
 	for (int i = 1; i < 3; ++i)
 	{
@@ -22,13 +24,6 @@ void Level::Begin()
 
 void Level::Update(float deltaTime)
 {
-	for (auto entity : m_entities)
-	{
-		TransformComponent& comp = GetComponent<TransformComponent>(entity);
-		comp.m_x += deltaTime * 10.f * 1.77777777778f;
-		comp.m_y += deltaTime * 10.f;
-	}
-
 	for (auto& system : m_systems)
 	{
 		system->UpdateSystem(deltaTime);
@@ -77,6 +72,7 @@ Entity Level::CreatePlayer(int playerID, std::string name)
 	EmplaceComponent<TransformComponent>(internalPID, 0, 0);
 	EmplaceComponent<TagComponent>(internalPID, name);
 	EmplaceComponent<UUIDComponent>(internalPID, elapsedTimeClock.getElapsedTime().asMilliseconds());
+	EmplaceComponent<MovementComponent>(internalPID);
 	PlayerConnectionType type;
 
 	if (isServer)

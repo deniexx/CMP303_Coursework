@@ -10,7 +10,6 @@
 #include <vector>
 #include "../Components/Components.h"
 #include "../Systems/ISystem.h"
-//#include "../Systems/ISystem.h"
 
 class Level
 {
@@ -109,6 +108,11 @@ public:
 		return toReturn;
 	}
 
+	std::vector<Entity> GetEntities()
+	{
+		return m_entities;
+	}
+
 	Entity CreatePlayer(int playerID = -1, std::string name = std::string());
 
 	Entity CreateEntity(std::string name = std::string())
@@ -145,8 +149,9 @@ private:
 	// @TODO: Good enough for the week
 	// @TODO: Possibly implement a second player on the screen
     // This will be pre-incremented, starting from 1 as 0 will be our networking entity, handling the network messages
-    uint32_t lastPlayerID = 0; // Only used on the server
+    uint8_t lastPlayerID = 0; // Only used on the server
 	uint8_t playerCount = 0; // The number of players, used for some systems
+	uint8_t localPlayerID = -1;
 	uint32_t lastEntityID = 6;
 	std::unordered_map<std::type_index, std::unordered_map<Entity, std::shared_ptr<void>>> m_components;
 	std::vector<Entity> m_entities;

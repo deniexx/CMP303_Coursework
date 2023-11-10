@@ -43,10 +43,10 @@ void PhysicsSystem::CalculatePhysics(Entity player, std::shared_ptr<Level> level
     {
         horizontalMovementMultiplier = 1;
         movementComp.m_currentVelocity.y -= movementComp.m_inputVelocity.y;
+        movementComp.m_currentVelocity.x *= movementComp.m_lateralFriction;
     }
 
 	movementComp.m_currentVelocity.x += (movementComp.m_inputVelocity.x * horizontalMovementMultiplier) * movementComp.m_acceleration;
-    movementComp.m_currentVelocity.x *= movementComp.m_lateralFriction;
 	movementComp.m_currentVelocity.x = Clamp<float>(movementComp.m_currentVelocity.x, -movementComp.m_maxSpeed, movementComp.m_maxSpeed);
 
     movementComp.m_currentVelocity.y += m_gravity;

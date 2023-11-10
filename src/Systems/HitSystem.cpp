@@ -44,6 +44,8 @@ void HitSystem::UpdateSystem(float deltaTime)
 					sf::Vector2f hitterPos(pTransComp.m_x, pTransComp.m_y);
 
 					sf::Vector2f impulseDirection = hitPos - hitterPos;
+
+					// Get length of vector
 					float vectorLength = sqrt(impulseDirection.x * impulseDirection.x + impulseDirection.y * impulseDirection.y);
 					
 					// Normalize vector
@@ -56,7 +58,9 @@ void HitSystem::UpdateSystem(float deltaTime)
 						assert(false, "Something bad has happened");
 					}
 
-					impulseDirection.y -= .05f;
+					impulseDirection.y = -0.5f;
+					impulseDirection.x = impulseDirection.x < 0 ? -0.5f : 0.5f;
+
 					hitHitComp.m_damageMultiplier *= 1.1f;
 					float impulseAmount = hitComp.m_impuseOnHit * hitHitComp.m_damageMultiplier;
 

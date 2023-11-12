@@ -142,11 +142,6 @@ private:
 	// @TODO: Maybe figure out more of the game architecture before proceeding
 	// @TODO: Figure out animation
 	// ---------------------------- FOR THIS WEEK ----------------------------
-	// @TODO: Start with rendering the world and platforms
-	// @TODO: Implement the physics and input systems and get players moving on the screen with velocity
-	// @TODO: Add hit system and hit components that would check if you have been hit or not and the hit system will deal with the hits accordingly
-	// @TODO: ApplyImpulse on enemies after being hit
-	// @TODO: Good enough for the week
 	// @TODO: Possibly implement a second player on the screen
     // This will be pre-incremented, starting from 1 as 0 will be our networking entity, handling the network messages
     uint8_t lastPlayerID = 0; // Only used on the server

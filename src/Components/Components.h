@@ -73,6 +73,11 @@ struct InputComponent
 	int32_t m_confirmInput = 0;
 };
 
+struct ReplicatedInput
+{
+	int32_t m_move = 1;
+};
+
 struct MovementComponent
 {
 	MovementComponent() = default;
@@ -87,6 +92,7 @@ struct MovementComponent
 	float m_lateralFriction = 0.75f;
 	float m_airControl = 0.4f;
 	float m_fallingSpeedMultiplier = 1.f;
+	bool m_impulseOverridesMovement = false;
 };
 
 struct HitComponent
@@ -94,6 +100,8 @@ struct HitComponent
 	HitComponent() = default;
 
 	float m_damageMultiplier = 1.f;
-	float m_impuseOnHit = 250.f;
+	float m_impuseOnHit = 550.f;
 	sf::Vector2f m_attackSize = sf::Vector2f(48.f, 48.f);
+	double m_lastAttackTime = 0.f;
+	float m_attackCooldown = 0.15f;
 };

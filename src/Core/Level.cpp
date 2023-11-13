@@ -11,17 +11,25 @@ void Level::Begin()
 	m_systems.push_back(std::make_unique<PhysicsSystem>());
 	m_systems.push_back(std::make_unique<HitSystem>());
 
-	for (int i = 1; i < 3; ++i)
+	if (server)
 	{
-		Entity ent = CreatePlayer(i, "Player" + std::to_string(i));
-		UUIDComponent& uuidComp = GetComponent<UUIDComponent>(ent);
-		TagComponent& tagComp = GetComponent<TagComponent>(ent);
-		TransformComponent& transComp = GetComponent<TransformComponent>(ent);
-		transComp.m_x = (i) * 100.f * 1.77777777778f;
-		transComp.m_y = (i) * 100.f;
+		tcplistener.listen(28000, "127.0.0.1");
+
+		localPlayerID = CreatePlayer(-1, std::to_string(lastPlayerID + 1));
+		UUIDComponent& uuidComp = GetComponent<UUIDComponent>(localPlayerID);
+		TagComponent& tagComp = GetComponent<TagComponent>(localPlayerID);
+		TransformComponent& transComp = GetComponent<TransformComponent>(localPlayerID);
+		transComp.m_x = 100.f * 1.77777777778f;
+		transComp.m_y = 100.f;
 
 		std::cout << tagComp.m_tag << ": " << uuidComp.m_uuid << "\n";
 	}
+	else
+	{
+		tcpsocket1.connect("127.0.0.1", 28000);
+	}
+
+	tcplistener.setBlocking(false);
 }
 
 void Level::Update(float deltaTime)
@@ -29,6 +37,27 @@ void Level::Update(float deltaTime)
 	for (auto& system : m_systems)
 	{
 		system->UpdateSystem(deltaTime);
+	}
+
+	if (server && tcplistener.accept(tcpsocket1) == sf::Socket::Done)
+	{
+		CreatePlayer();
+		sf::Packet packet;
+		packet << "Hello!";
+		tcpsocket1.send(packet);
+		// @TODO: Send a hello message back and forth, to confirm status
+		// Only create a character, if we have received a confirmation back
+		// @TODO: Check for inactivity and connection stability
+	}
+	else if (!server)
+	{
+		sf::Packet packet;
+		if (tcpsocket1.receive(packet) == sf::Socket::Status::Done)
+		{
+			std::string helloStr;
+			packet >> helloStr;
+			std::cout << helloStr;
+		}
 	}
 }
 
@@ -56,7 +85,12 @@ void Level::Render()
 	}
 }
 
-Entity Level::CreatePlayer(int playerID, std::string name)
+double Level::GetElapsedTime()
+{
+	return elapsedTimeClock.getElapsedTime().asSeconds();
+}
+
+Entity Level::CreatePlayer(int playerID, std::string name, bool localPlayer)
 {
 	if (lastPlayerID > 6 || playerCount > 6)
 		return -1; // Do not create more than 6 players, so we return an invalid ID, this shouldn't really ever happen
@@ -82,20 +116,18 @@ Entity Level::CreatePlayer(int playerID, std::string name)
 	{
 		type = PlayerConnectionType::Server;
 	}
-	else /*if (isLocalPlayer)*/
+	else if (localPlayer)
 	{
 		type = PlayerConnectionType::ClientLocal;
-	}/*else
+		localPlayerID = internalPID;
+	}
+	else
 	{
 		type = PlayerConnectionType::ClientRemote;
 		// @TODO: Find out how to determine if the client is local or not, if it is a local client create an input component, else do not
-	}*/
-
-	if (type == PlayerConnectionType::Server || type == PlayerConnectionType::ClientLocal)
-	{
-		EmplaceComponent<InputComponent>(internalPID);
 	}
 
+	EmplaceComponent<InputComponent>(internalPID);
 	EmplaceComponent<NetworkPlayerComponent>(internalPID, type);
 
 	/* TEMPORARY*/

@@ -20,58 +20,51 @@ void InputSystem::UpdateSystem(float deltaTime)
     for (auto& player : players)
     {
         if (!level->HasComponent<InputComponent>(player)) continue;
+        NetworkPlayerComponent& networkPlayerComp = level->GetComponent<NetworkPlayerComponent>(player);
+        if (networkPlayerComp.m_connectionType == PlayerConnectionType::ClientRemote) continue;
+        if (networkPlayerComp.m_connectionType == PlayerConnectionType::None) continue; // this should never really be the case, but it's safer to check
 
         InputComponent& comp = level->GetComponent<InputComponent>(player);
 
         // Process input
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A))
         {
-            bUpdate |= comp.m_moveInput != -1;
             comp.m_moveInput = -1;
         }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D))
         {
-            bUpdate |= comp.m_moveInput != 1;
             comp.m_moveInput = 1;
         }
 		else
 		{
-			bUpdate |= comp.m_moveInput != 0;
-			comp.m_moveInput = 0;
+            comp.m_moveInput = 0;
 		}
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::W))
         {
-            bUpdate |= comp.m_upDownNavigateInput != -1;
             comp.m_upDownNavigateInput = -1;
         }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S))
         {
-            bUpdate |= comp.m_upDownNavigateInput != 1;
             comp.m_upDownNavigateInput = 1;
         }
         else
         {
-            bUpdate |= comp.m_upDownNavigateInput != 0;
             comp.m_upDownNavigateInput = 0;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space))
         {
-            bUpdate |= comp.m_jumpInput != 1;
             comp.m_jumpInput = 1;
         }
         else
         {
-            bUpdate |= comp.m_jumpInput != 0;
             comp.m_jumpInput = 0;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::J))
         {
-            bUpdate |= comp.m_attackInput != 1;
             comp.m_attackInput = 1;
         }
         else
         {
-            bUpdate |= comp.m_attackInput != 0;
             comp.m_attackInput = 0;
         }
         // We do not care about these, as they are UI only (local player only)

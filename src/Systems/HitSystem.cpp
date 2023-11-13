@@ -21,9 +21,10 @@ void HitSystem::UpdateSystem(float deltaTime)
 		InputComponent& inputComp = level->GetComponent<InputComponent>(player);
 		HitComponent& hitComp = level->GetComponent<HitComponent>(player);
 
-		if (inputComp.m_attackInput > 0)
+		if (inputComp.m_attackInput > 0 && hitComp.m_lastAttackTime + hitComp.m_attackCooldown < level->GetElapsedTime())
 		{
 			inputComp.m_attackInput = 0;
+			hitComp.m_lastAttackTime = level->GetElapsedTime();
 
 			TransformComponent& pTransComp = level->GetComponent<TransformComponent>(player);
 			sf::FloatRect hitRect(sf::Vector2f(pTransComp.m_x, pTransComp.m_y), hitComp.m_attackSize);
@@ -40,6 +41,7 @@ void HitSystem::UpdateSystem(float deltaTime)
 					HitComponent& hitHitComp = level->GetComponent<HitComponent>(inPlayer);
 					TransformComponent& hitTransComp = level->GetComponent<TransformComponent>(inPlayer);
 					
+					hitMoveComp.m_impulseOverridesMovement = true;
 					sf::Vector2f hitPos(hitTransComp.m_x, hitTransComp.m_y);
 					sf::Vector2f hitterPos(pTransComp.m_x, pTransComp.m_y);
 

@@ -46,13 +46,17 @@ void PhysicsSystem::CalculatePhysics(Entity player, std::shared_ptr<Level> level
         movementComp.m_currentVelocity.x *= movementComp.m_lateralFriction;
     }
 
-	movementComp.m_currentVelocity.x += (movementComp.m_inputVelocity.x * horizontalMovementMultiplier) * movementComp.m_acceleration;
-	movementComp.m_currentVelocity.x = Clamp<float>(movementComp.m_currentVelocity.x, -movementComp.m_maxSpeed, movementComp.m_maxSpeed);
+    if (!movementComp.m_impulseOverridesMovement)
+    {
+        movementComp.m_currentVelocity.x += (movementComp.m_inputVelocity.x * horizontalMovementMultiplier) * movementComp.m_acceleration;
+        movementComp.m_currentVelocity.x = Clamp<float>(movementComp.m_currentVelocity.x, -movementComp.m_maxSpeed, movementComp.m_maxSpeed);
+    }
 
     movementComp.m_currentVelocity.y += m_gravity;
 
     if (IsFalling(movementComp))
     {
+        movementComp.m_impulseOverridesMovement = false;
         movementComp.m_currentVelocity.y *= movementComp.m_fallingSpeedMultiplier;
     }
 

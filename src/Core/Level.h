@@ -2,6 +2,8 @@
 
 #include "CoreDefines.h"
 
+#include "SFML/Network.hpp"
+
 #include <stdint.h>
 #include <string>
 #include <unordered_map>
@@ -24,6 +26,8 @@ public:
 	virtual void ServerUpdate();
 
 	virtual void Render();
+
+	double GetElapsedTime();
 
 private:
 
@@ -113,7 +117,7 @@ public:
 		return m_entities;
 	}
 
-	Entity CreatePlayer(int playerID = -1, std::string name = std::string());
+	Entity CreatePlayer(int playerID = -1, std::string name = std::string(), bool localPlayer = false);
 
 	Entity CreateEntity(std::string name = std::string())
 	{
@@ -133,6 +137,15 @@ public:
 	}
 
 private:
+
+	sf::TcpListener tcplistener;
+	sf::TcpSocket tcpsocket1;
+
+#ifdef DEBUG
+	bool server = false;
+#else
+	bool server = true;
+#endif // DEBUG
 
 	// @TODO: IDs 1-6(6), will be for players so we should start at 6
 	// @TODO: We will only create players, if the start game has been called, or the server has sent us a create a player event

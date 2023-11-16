@@ -7,10 +7,10 @@
 
 class InputSystem : public ISystem
 {
-	virtual void BeginSystem();
-	virtual void UpdateSystem(float deltaTime);
-	virtual void DestroySystem();
+	void BeginSystem() override;
+	void UpdateSystem(float deltaTime) override;
+	void DestroySystem() override;
 
-	virtual void ClientUpdate();
-	virtual void ServerUpdate();
+	float TimeBetweenUpdates() override { return 0.5f; }
+	void SendUpdate() override;
 };

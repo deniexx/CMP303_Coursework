@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SFML/Graphics.hpp"
+#include "SFML/Network.hpp"
 #include <random>
 
 struct TransformComponent
@@ -73,11 +74,6 @@ struct InputComponent
 	int32_t m_confirmInput = 0;
 };
 
-struct ReplicatedInput
-{
-	int32_t m_move = 1;
-};
-
 struct MovementComponent
 {
 	MovementComponent() = default;
@@ -104,4 +100,20 @@ struct HitComponent
 	sf::Vector2f m_attackSize = sf::Vector2f(48.f, 48.f);
 	double m_lastAttackTime = 0.f;
 	float m_attackCooldown = 0.15f;
+};
+
+struct ServerSocketComponent
+{
+	sf::TcpListener m_tcpListener;
+	sf::SocketSelector m_socketSelector;
+	std::vector<sf::TcpSocket*> m_tcpSockets;
+	sf::UdpSocket m_udpSocket;
+};
+
+struct ClientSocketComponent
+{
+	sf::TcpSocket m_tcpSocket;
+	sf::UdpSocket m_udpSocket;
+
+	sf::IpAddress m_fallbackAddress;
 };

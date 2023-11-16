@@ -9,7 +9,7 @@ class HitSystem : public ISystem
 	void UpdateSystem(float deltaTime) override;
 	void DestroySystem() override;
 
-	void ClientUpdate() override;
-	void ServerUpdate() override;
+	float TimeBetweenUpdates() override { return 99999999.f; }
+	void SendUpdate() override {}
 };
 

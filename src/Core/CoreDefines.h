@@ -4,7 +4,11 @@
 
 typedef uint32_t Entity;
 
-enum class PlayerConnectionType : uint8_t
+#define NETWORK_ENTITY 0
+#define AUTHENTICATION_MESSAGE_SERVER "Alehandro"
+#define AUTHENTICATION_MESSAGE_CLIENT "Ruzmarin"
+
+enum class PlayerConnectionType : int8_t
 {
     Server = 0,
     ClientLocal = 1,

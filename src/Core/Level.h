@@ -1,9 +1,6 @@
 #pragma once
 
 #include "CoreDefines.h"
-
-#include "SFML/Network.hpp"
-
 #include <stdint.h>
 #include <string>
 #include <unordered_map>
@@ -27,11 +24,14 @@ public:
 
 	virtual void Render();
 
-	double GetElapsedTime();
+	float GetElapsedTime();
+
+	bool IsServer();
 
 private:
-
+	
 	sf::Clock elapsedTimeClock;
+	std::unordered_map<ISystem*, float> lastUpdatedSystemFrame;
 
 #pragma region ECS
 	/* ECS */
@@ -101,12 +101,19 @@ public:
 		componentMap.erase(entityID);
 	}
 
+	template <typename SystemType>
+	void AddSystem()
+	{
+		m_systems.push_back(std::make_unique<SystemType>());
+		m_systems[m_systems.size() - 1]->BeginSystem();
+	}
+
 	std::vector<Entity> GetAllPlayerEntities()
 	{
 		std::vector<Entity> toReturn;
 		for (uint8_t i = 1; i < playerCount + 1; ++i)
 		{
-			toReturn.push_back(i);
+			toReturn.push_back(m_entities[i]);
 		}
 
 		return toReturn;
@@ -133,20 +140,13 @@ public:
 		for (auto& componentMap : m_components) {
 			componentMap.second.erase(entityID);
 		}
-		m_entities.erase(std::remove(m_entities.begin(), m_entities.end(), entityID), m_entities.end());
+		std::erase(m_entities, entityID);
 	}
 
+	uint8_t GetLocalPlayerID() const { return localPlayerID; }
+
 private:
-
-	sf::TcpListener tcplistener;
-	sf::TcpSocket tcpsocket1;
-
-#ifdef DEBUG
-	bool server = false;
-#else
-	bool server = true;
-#endif // DEBUG
-
+	
 	// @TODO: IDs 1-6(6), will be for players so we should start at 6
 	// @TODO: We will only create players, if the start game has been called, or the server has sent us a create a player event
 	// @TODO: Server/Client server systems that do work on the components

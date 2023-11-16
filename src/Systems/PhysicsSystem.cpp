@@ -1,5 +1,6 @@
 #include "PhysicsSystem.h"
 #include "../Core/Application.h"
+#include "../Messages/Messages.h"
 #include "../Utilities/MathUtils.h"
 
 void PhysicsSystem::BeginSystem()
@@ -9,7 +10,7 @@ void PhysicsSystem::BeginSystem()
 
 void PhysicsSystem::UpdateSystem(float deltaTime)
 {
-    std::shared_ptr<Level> level = Application::Instance->GetCurrentLevel();
+    Level* level = Application::Instance->GetCurrentLevel().get();
     std::vector<Entity> players = level->GetAllPlayerEntities();
     
     for (const auto& player : players)
@@ -18,22 +19,48 @@ void PhysicsSystem::UpdateSystem(float deltaTime)
         if (!level->HasComponent<MovementComponent>(player)) continue;
         if (!level->HasComponent<InputComponent>(player)) continue;
 
-        UpdateMovementComponent(player, level);
+        InputComponent& inputComponent = level->GetComponent<InputComponent>(player);
+        UpdateMovementComponent(player, level, inputComponent);
         CalculatePhysics(player, level, deltaTime);
     }
 }
 
-void PhysicsSystem::UpdateMovementComponent(Entity player, std::shared_ptr<Level> level)
+void PhysicsSystem::SendUpdate()
 {
-    InputComponent& inputComp = level->GetComponent<InputComponent>(player);
-    MovementComponent& movementComp = level->GetComponent<MovementComponent>(player);
+    Level* level = Application::Instance->GetCurrentLevel().get();
+    if (level->IsServer())
+    {
+        const std::vector<Entity> players = level->GetAllPlayerEntities();
 
-    movementComp.m_inputVelocity = sf::Vector2f(inputComp.m_moveInput, inputComp.m_jumpInput * movementComp.m_jumpStrength);
-    inputComp.m_jumpInput = 0;
-    inputComp.m_moveInput = 0;
+        sf::Packet packet;
+        for (const Entity player : players)
+        {
+            const TransformComponent& transComp = level->GetComponent<TransformComponent>(player);
+
+            PhysicsUpdateMessage message;
+            message.m_playerID = player;
+            message.m_x = transComp.m_x;
+            message.m_y = transComp.m_y;
+
+            packet << PHYSICSUPDATE_EVENTID;
+            packet << message;
+        }
+
+        const ServerSocketComponent& serverSocketComponent = level->GetComponent<ServerSocketComponent>(NETWORK_ENTITY);
+        for (sf::TcpSocket* socket : serverSocketComponent.m_tcpSockets)
+        {
+            socket->send(packet);
+        }
+    }
 }
 
-void PhysicsSystem::CalculatePhysics(Entity player, std::shared_ptr<Level> level, float deltaTime)
+void PhysicsSystem::UpdateMovementComponent(Entity player, Level* level, InputComponent& inputComponent)
+{
+    MovementComponent& movementComp = level->GetComponent<MovementComponent>(player);
+    movementComp.m_inputVelocity = sf::Vector2f(inputComponent.m_moveInput, inputComponent.m_jumpInput * movementComp.m_jumpStrength);
+}
+
+void PhysicsSystem::CalculatePhysics(Entity player, Level* level, float deltaTime)
 {
     TransformComponent& transComp = level->GetComponent<TransformComponent>(player);
     MovementComponent& movementComp = level->GetComponent<MovementComponent>(player);
@@ -92,16 +119,6 @@ bool PhysicsSystem::IsFalling(const MovementComponent& movementComp)
 }
 
 void PhysicsSystem::DestroySystem()
-{
-
-}
-
-void PhysicsSystem::ClientUpdate()
-{
-
-}
-
-void PhysicsSystem::ServerUpdate()
 {
 
 }

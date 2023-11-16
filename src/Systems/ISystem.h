@@ -10,6 +10,6 @@ public:
     virtual void UpdateSystem(float deltaTime) = 0;
     virtual void DestroySystem() = 0;
 
-    virtual void ClientUpdate() = 0;
-    virtual void ServerUpdate() = 0;
+    virtual float TimeBetweenUpdates() = 0;
+    virtual void SendUpdate() = 0;
 };

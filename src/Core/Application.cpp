@@ -16,9 +16,8 @@ void Application::StartUp()
 	while (m_window->isOpen())
 	{
 		float deltaTime = deltaClock.restart().asSeconds();
-		PollEvents(m_window);
 		m_currentLevel->Update(deltaTime);
-
+		PollEvents(m_window);
 		m_window->clear(sf::Color(100, 149, 237));
 		m_window->setActive();
 		m_currentLevel->Render();

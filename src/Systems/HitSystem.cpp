@@ -10,7 +10,7 @@ void HitSystem::BeginSystem()
 
 void HitSystem::UpdateSystem(float deltaTime)
 {
-	std::shared_ptr<Level> level = Application::Instance->GetCurrentLevel();
+	Level* level = Application::Instance->GetCurrentLevel().get();
 	std::vector<Entity> players = level->GetAllPlayerEntities();
 
 	for (const auto& player : players)
@@ -57,7 +57,8 @@ void HitSystem::UpdateSystem(float deltaTime)
 					}
 					else
 					{
-						assert(false, "Something bad has happened");
+                        // We could not normalize velocity, check this out
+						assert(false);
 					}
 
 					impulseDirection.y = -0.5f;
@@ -74,16 +75,6 @@ void HitSystem::UpdateSystem(float deltaTime)
 }
 
 void HitSystem::DestroySystem()
-{
-
-}
-
-void HitSystem::ClientUpdate()
-{
-
-}
-
-void HitSystem::ServerUpdate()
 {
 
 }

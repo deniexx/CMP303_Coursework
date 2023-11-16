@@ -19,17 +19,18 @@ class PhysicsSystem : public ISystem
 {
 public:
 
-    virtual void BeginSystem() override;
-    virtual void UpdateSystem(float deltaTime) override;
-    virtual void DestroySystem() override;
+    void BeginSystem() override;
+    void UpdateSystem(float deltaTime) override;
+    void DestroySystem() override;
 
-    virtual void ClientUpdate() override;
-    virtual void ServerUpdate() override;
+    // We will send this update 10 times a second
+    float TimeBetweenUpdates() override { return 1.f; }
+    void SendUpdate() override;
 
 private:
 
-    void UpdateMovementComponent(Entity player, std::shared_ptr<Level> level);
-    void CalculatePhysics(Entity player, std::shared_ptr<Level> level, float deltaTime);
+    void UpdateMovementComponent(Entity player, Level* level, InputComponent& inputComponent);
+    void CalculatePhysics(Entity player, Level* level, float deltaTime);
 
     bool IsPlayerOnGround(const TransformComponent& transformComp);
     bool IsFalling(const MovementComponent& movementComp);

@@ -10,6 +10,11 @@ struct TransformComponent
 	TransformComponent(TransformComponent& other) = default;
 	TransformComponent(float x, float y) : m_x(x), m_y(y) {}
 
+	bool operator==(const TransformComponent& other) const
+	{
+		return m_x == other.m_x && m_y == other.m_y;
+	}
+
 	float m_x = 0, m_y = 0;
 };
 
@@ -60,7 +65,7 @@ struct NetworkPlayerComponent
 	NetworkPlayerComponent(NetworkPlayerComponent& other) = delete;
 	NetworkPlayerComponent(PlayerConnectionType connectionType) : m_connectionType(connectionType) {}
 
-	enum PlayerConnectionType m_connectionType = PlayerConnectionType::None;
+	PlayerConnectionType m_connectionType = PlayerConnectionType::None;
 };
 
 struct InputComponent
@@ -72,6 +77,16 @@ struct InputComponent
 	int32_t m_jumpInput = 0;
 	int32_t m_attackInput = 0;
 	int32_t m_confirmInput = 0;
+};
+
+struct InputArray
+{
+	std::vector<InputComponent> m_inputs;
+};
+
+struct LastPhysicsState
+{
+	std::unordered_map<Entity, TransformComponent> m_state;
 };
 
 struct MovementComponent

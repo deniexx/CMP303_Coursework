@@ -1,4 +1,7 @@
 #include "Level.h"
+
+#include <iostream>
+
 #include "Application.h"
 #include "../Systems/InputSystem.h"
 #include "../Systems/PhysicsSystem.h"
@@ -9,10 +12,13 @@ void Level::Begin()
 {
 	m_entities.push_back(NETWORK_ENTITY);
 
-#if DEBUG == 0
+#if DEBUG
+	std::cout << "Server";
 	CreatePlayer();
 	EmplaceComponent<ServerSocketComponent>(NETWORK_ENTITY);
+	EmplaceComponent<LastPhysicsState>(NETWORK_ENTITY);
 #else
+	std::cout << "Client";
 	EmplaceComponent<ClientSocketComponent>(NETWORK_ENTITY);
 #endif
 
@@ -55,7 +61,7 @@ void Level::Render()
 		SpriteComponent& comp = GetComponent<SpriteComponent>(entity);
 		TransformComponent& transform = GetComponent<TransformComponent>(entity);
 		comp.m_sprite.setPosition(transform.m_x, transform.m_y);
-	
+		
 		Application::Instance->m_window->draw(comp.m_sprite);
 	}
 }
@@ -69,6 +75,25 @@ float Level::GetElapsedTime()
 bool Level::IsServer()
 {
 	return HasComponent<ServerSocketComponent>(NETWORK_ENTITY);
+}
+
+bool Level::IsLocalPlayer()
+{
+	return IsEntityLocalPlayer(localPlayerID);
+}
+
+bool Level::IsEntityLocalPlayer(Entity entity)
+{
+	if (!HasComponent<NetworkPlayerComponent>(entity))
+		return false;
+
+	NetworkPlayerComponent& comp = GetComponent<NetworkPlayerComponent>(entity);
+	
+	bool local = false;
+	local |= comp.m_connectionType == PlayerConnectionType::Server;
+	local |= comp.m_connectionType == PlayerConnectionType::ClientLocal;
+
+	return local;
 }
 
 Entity Level::CreatePlayer(int playerID, std::string name, bool localPlayer)
@@ -91,6 +116,7 @@ Entity Level::CreatePlayer(int playerID, std::string name, bool localPlayer)
 	EmplaceComponent<UUIDComponent>(internalPID, elapsedTimeClock.getElapsedTime().asMilliseconds());
 	EmplaceComponent<MovementComponent>(internalPID);
 	EmplaceComponent<HitComponent>(internalPID);
+	EmplaceComponent<InputArray>(internalPID);
 	PlayerConnectionType type;
 
 	if (isServer && internalPID == 1) // this means we are the server, since he'll always be entity 1

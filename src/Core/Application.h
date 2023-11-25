@@ -17,6 +17,8 @@ public:
 
 	std::shared_ptr<Level> GetCurrentLevel();
 
+	bool IsFocused() const;
+	
 	/* Update Loops*/
 private:
 
@@ -25,8 +27,5 @@ private:
 	std::shared_ptr<Level> m_currentLevel;
 
 	void PollEvents(std::shared_ptr<sf::RenderWindow> window);
-	void UpdateNetwork();
-	void SimulateGame();
-	void Render();
 };
 

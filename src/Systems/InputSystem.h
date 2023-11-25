@@ -11,6 +11,6 @@ class InputSystem : public ISystem
 	void UpdateSystem(float deltaTime) override;
 	void DestroySystem() override;
 
-	float TimeBetweenUpdates() override { return 0.5f; }
+	float TimeBetweenUpdates() override { return 0.25f; }
 	void SendUpdate() override;
 };

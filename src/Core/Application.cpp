@@ -30,6 +30,11 @@ std::shared_ptr<Level> Application::GetCurrentLevel()
 	return m_currentLevel;
 }
 
+bool Application::IsFocused() const
+{
+	return m_window->hasFocus();
+}
+
 void Application::PollEvents(std::shared_ptr<sf::RenderWindow> window)
 {
 	sf::Event currentEvent;
@@ -54,19 +59,4 @@ void Application::PollEvents(std::shared_ptr<sf::RenderWindow> window)
 				break;
 		}
 	}
-}
-
-void Application::UpdateNetwork()
-{
-	// @TODO: Run a network sim on the components
-}
-
-void Application::SimulateGame()
-{
-	// @TODO: Simulate the game
-}
-
-void Application::Render()
-{
-	// @TODO: Render all sprite components, etc...
 }

@@ -13,12 +13,16 @@ void PhysicsSystem::UpdateSystem(float deltaTime)
     Level* level = Application::Instance->GetCurrentLevel().get();
     std::vector<Entity> players = level->GetAllPlayerEntities();
     
-    for (const auto& player : players)
+    for (Entity player : players)
     {
+        // @TODO: Update this so that local players update every frame using the input component, while a remote player uses the InputArray
         // This might be the case if the player is currently being initialized, although it shouldn't really happen ever
         if (!level->HasComponent<MovementComponent>(player)) continue;
-        if (!level->HasComponent<InputComponent>(player)) continue;
 
+        if (!level->IsEntityLocalPlayer(player))
+            ResimulatePhysics(player, level, deltaTime);
+        
+        if (!level->HasComponent<InputComponent>(player)) continue;
         InputComponent& inputComponent = level->GetComponent<InputComponent>(player);
         UpdateMovementComponent(player, level, inputComponent);
         CalculatePhysics(player, level, deltaTime);
@@ -30,13 +34,21 @@ void PhysicsSystem::SendUpdate()
     Level* level = Application::Instance->GetCurrentLevel().get();
     if (level->IsServer())
     {
+        bool update = false;
         const std::vector<Entity> players = level->GetAllPlayerEntities();
+        LastPhysicsState& lps = level->GetComponent<LastPhysicsState>(NETWORK_ENTITY);
 
         sf::Packet packet;
         for (const Entity player : players)
         {
-            const TransformComponent& transComp = level->GetComponent<TransformComponent>(player);
+            TransformComponent& transComp = level->GetComponent<TransformComponent>(player);
+            if (lps.m_state[player] == transComp)
+            {
+                lps.m_state[player] = transComp;
+                continue; // skip player if no movement has happened since last physics update
+            }
 
+            update = true;
             PhysicsUpdateMessage message;
             message.m_playerID = player;
             message.m_x = transComp.m_x;
@@ -46,12 +58,37 @@ void PhysicsSystem::SendUpdate()
             packet << message;
         }
 
-        const ServerSocketComponent& serverSocketComponent = level->GetComponent<ServerSocketComponent>(NETWORK_ENTITY);
-        for (sf::TcpSocket* socket : serverSocketComponent.m_tcpSockets)
+        if (update)
         {
-            socket->send(packet);
+            const ServerSocketComponent& serverSocketComponent = level->GetComponent<ServerSocketComponent>(NETWORK_ENTITY);
+            for (sf::TcpSocket* socket : serverSocketComponent.m_tcpSockets)
+            {
+                socket->send(packet);
+            }
         }
     }
+}
+
+void PhysicsSystem::ResimulatePhysics(Entity player, Level* level, float deltaTime)
+{
+    if (!level->HasComponent<InputArray>(player)) return;
+
+    InputArray& inputArray = level->GetComponent<InputArray>(player);
+
+    if (inputArray.m_inputs.empty()) return;
+
+    // @TODO: Do not just set the transform component after this, but save it as an interpolation target and interpolate to that position smoothly
+    // @TODO: Update the calculate physics to only calculate physics and return a position vector
+    // @TODO: Add another function that can be called to fill up the transform component with the newly found position variables
+    for (size_t i = 0; i < inputArray.m_inputs.size() - 1; ++i)
+    {
+        UpdateMovementComponent(player, level, inputArray.m_inputs[i]);
+        CalculatePhysics(player, level, deltaTime);
+    }
+
+    InputComponent& inputComp = level->GetComponent<InputComponent>(player);
+    inputComp = inputArray.m_inputs[inputArray.m_inputs.size() - 1];
+    inputArray.m_inputs.clear();
 }
 
 void PhysicsSystem::UpdateMovementComponent(Entity player, Level* level, InputComponent& inputComponent)

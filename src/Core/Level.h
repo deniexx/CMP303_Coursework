@@ -28,6 +28,9 @@ public:
 
 	bool IsServer();
 
+	bool IsLocalPlayer();
+	bool IsEntityLocalPlayer(Entity entity);
+
 private:
 	
 	sf::Clock elapsedTimeClock;

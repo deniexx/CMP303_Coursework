@@ -14,16 +14,15 @@ void InputSystem::BeginSystem()
 
 void InputSystem::UpdateSystem(float deltaTime)
 {
+    if (!Application::Instance->IsFocused()) return;
+    
     Level* level = Application::Instance->GetCurrentLevel().get();
     std::vector<Entity> players = level->GetAllPlayerEntities();
-
-    bool bUpdate = false;
+    
     for (auto& player : players)
     {
         if (!level->HasComponent<InputComponent>(player)) continue;
-        NetworkPlayerComponent& networkPlayerComp = level->GetComponent<NetworkPlayerComponent>(player);
-        if (networkPlayerComp.m_connectionType == PlayerConnectionType::ClientRemote) continue;
-        if (networkPlayerComp.m_connectionType == PlayerConnectionType::None) continue; // this should never really be the case, but it's safer to check
+        if (!level->IsLocalPlayer()) continue;
 
         InputComponent& comp = level->GetComponent<InputComponent>(player);
 
@@ -78,7 +77,8 @@ void InputSystem::UpdateSystem(float deltaTime)
             comp.m_confirmInput = 0;
         }
 
-        // @FIXME: This is wrong, we should check if the player is local or not and then process the input, because ideally all players will have an input component
+        InputArray& inputArray = level->GetComponent<InputArray>(player);
+        inputArray.m_inputs.push_back(comp);
         break;
     }
 }
@@ -91,47 +91,30 @@ void InputSystem::DestroySystem()
 void InputSystem::SendUpdate()
 {
 	Level* level = Application::Instance->GetCurrentLevel().get();
+    
+    if (!level->HasComponent<InputArray>(level->GetLocalPlayerID())) return;
+
+    InputArray& inputArr = level->GetComponent<InputArray>(level->GetLocalPlayerID());
+    
+    sf::Packet packet;
+    packet << INPUTUPDATE_EVENTID;
+    packet << level->GetLocalPlayerID();
+    packet << inputArr;
+
     if (!level->IsServer())
     {
-        if (!level->HasComponent<InputComponent>(level->GetLocalPlayerID())) return;
-
-        InputComponent& inputComponent = level->GetComponent<InputComponent>(level->GetLocalPlayerID());
-        InputUpdateMessage message;
-        message.m_playerID = level->GetLocalPlayerID();
-        message.m_moveInput = inputComponent.m_moveInput;
-        message.m_attackInput = inputComponent.m_attackInput;
-        message.m_jumpInput = inputComponent.m_jumpInput;
-
-        sf::Packet packet;
-        packet << INPUTUPDATE_EVENTID;
-        packet << message;
-
         ClientSocketComponent& socketComponent = level->GetComponent<ClientSocketComponent>(NETWORK_ENTITY);
         socketComponent.m_tcpSocket.send(packet);
     }
     else
     {
-        std::vector<Entity> players = level->GetAllPlayerEntities();
-        
-        sf::Packet packet;
-        for (Entity player : players)
+        ServerSocketComponent& socketComponent = level->GetComponent<ServerSocketComponent>(NETWORK_ENTITY);
+
+        for (sf::TcpSocket* socket : socketComponent.m_tcpSockets)
         {
-			InputComponent& inputComponent = level->GetComponent<InputComponent>(level->GetLocalPlayerID());
-			InputUpdateMessage message;
-            message.m_playerID = player;
-			message.m_moveInput = inputComponent.m_moveInput;
-			message.m_attackInput = inputComponent.m_attackInput;
-			message.m_jumpInput = inputComponent.m_jumpInput;
-
-			sf::Packet packet;
-            packet << INPUTUPDATE_EVENTID;
-			packet << message;
+            socket->send(packet);
         }
-
-		const ServerSocketComponent& serverSocketComponent = level->GetComponent<ServerSocketComponent>(NETWORK_ENTITY);
-		for (sf::TcpSocket* socket : serverSocketComponent.m_tcpSockets)
-		{
-			socket->send(packet);
-		}
     }
+    inputArr.m_inputs.clear();
+
 }

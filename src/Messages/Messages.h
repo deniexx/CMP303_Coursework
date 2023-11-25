@@ -67,24 +67,30 @@ inline sf::Packet& operator >>(sf::Packet& packet, PhysicsUpdateMessage& m)
 #pragma endregion
 
 #pragma region InputUpdate
-struct InputUpdateMessage
+inline sf::Packet& operator <<(sf::Packet& packet, const InputArray& m)
 {
-    uint8_t m_playerID;
-    int32_t m_moveInput;
-    int32_t m_jumpInput;
-    int32_t m_attackInput;
-};
+    packet << (uint32_t)m.m_inputs.size();
+    for (size_t i = 0; i < m.m_inputs.size(); ++i)
+    {
+        packet << m.m_inputs[i].m_moveInput << m.m_inputs[i].m_jumpInput << m.m_inputs[i].m_attackInput << m.m_inputs[i].m_confirmInput << m.m_inputs[i].m_upDownNavigateInput;
+    }
 
-inline sf::Packet& operator <<(sf::Packet& packet, const InputUpdateMessage& m)
-{
-	return packet << m.m_playerID << m.m_moveInput << m.m_jumpInput << m.m_attackInput;
+    return packet;
 }
 
-inline sf::Packet& operator >>(sf::Packet& packet, InputUpdateMessage& m)
+inline sf::Packet& operator >>(sf::Packet& packet, InputArray& m)
 {
-    return packet >> m.m_playerID >> m.m_moveInput >> m.m_jumpInput >> m.m_attackInput;
-}
+    uint32_t size;
+    packet >> size;
+    for (size_t i = 0; i < size; ++i)
+    {
+        InputComponent comp;
+        packet >> comp.m_moveInput >> comp.m_jumpInput >> comp.m_attackInput >> comp.m_confirmInput >> comp.m_upDownNavigateInput;
+        m.m_inputs.push_back(comp);
+    }
 
+    return packet;
+}
 #pragma endregion
 
 // @TODO: Queue of packets and send them in case they need to arrive in order

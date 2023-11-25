@@ -1,5 +1,6 @@
 ﻿#include "NetworkSystem.h"
 
+#include <filesystem>
 #include <iostream>
 
 #include "../NetworkHelpers.h"
@@ -63,6 +64,17 @@ ClientSocketComponent& NetworkSystem::GetClientSocketComponent()
     return Application::Instance->GetCurrentLevel()->GetComponent<ClientSocketComponent>(NETWORK_ENTITY);
 }
 
+void NetworkSystem::RedistributePacket(ServerSocketComponent& socketComponent, sf::TcpSocket* client, sf::Packet& packet)
+{
+    for (sf::TcpSocket* socket : socketComponent.m_tcpSockets)
+    {
+        if (socket == client)
+            continue;
+        
+        socket->send(packet);
+    }
+}
+
 void NetworkSystem::ServerAcceptConnections(ServerSocketComponent& socketComponent)
 {
     sf::TcpSocket* tcpSocket = new sf::TcpSocket;
@@ -111,9 +123,7 @@ void NetworkSystem::ServerReceivePackets(ServerSocketComponent& socketComponent)
                         break;
 					case INPUTUPDATE_EVENTID:
 					    {
-						    InputUpdateMessage message;
-						    packet >> message;
-						    NetworkHelpers::UpdateInputForEntity(message);
+					        ServerUpdateInputArrays(socketComponent, client, packet);
 					    }
 					    break;
                     }
@@ -181,6 +191,23 @@ void NetworkSystem::ServerCheckAuthentication(ServerSocketComponent& socketCompo
     }
 }
 
+void NetworkSystem::ServerUpdateInputArrays(ServerSocketComponent& socketComponent, sf::TcpSocket* client, sf::Packet& packet)
+{
+    Level* level = Application::Instance->GetCurrentLevel().get();
+    
+    uint8_t playerId;
+    packet >> playerId;
+    
+    InputArray& inputArray = level->GetComponent<InputArray>(playerId);
+    packet >> inputArray;
+
+    sf::Packet packetToSend;
+    packetToSend << INPUTUPDATE_EVENTID;
+    packetToSend << playerId;
+    packetToSend << inputArray;
+    RedistributePacket(socketComponent, client, packetToSend);
+}
+
 void NetworkSystem::ClientUpdate()
 {
     ClientSocketComponent& clientSocketComponent = GetClientSocketComponent();
@@ -192,7 +219,6 @@ void NetworkSystem::ClientReceivePackets(ClientSocketComponent& socketComponent)
     sf::Packet packet;
     if (socketComponent.m_tcpSocket.receive(packet) != sf::Socket::Done)
     {
-        std::cout << "Couldn't receive from host\n";
         return;
     }
 
@@ -225,9 +251,7 @@ void NetworkSystem::ClientReceivePackets(ClientSocketComponent& socketComponent)
             break;
         case INPUTUPDATE_EVENTID:
             {
-                InputUpdateMessage message;
-                packet >> message;
-                NetworkHelpers::UpdateInputForEntity(message);
+                ClientProcessInputReceived(socketComponent, packet);
             }
             break;
         }
@@ -258,4 +282,15 @@ void NetworkSystem::ClientNewPlayerEvent(ClientSocketComponent& socketComponent,
 {
     const bool isLocal = message.m_playerConnection == (sf::Int8)PlayerConnectionType::ClientLocal;
     Application::Instance->GetCurrentLevel()->CreatePlayer(message.m_playerID, message.m_playerName, isLocal);
+}
+
+void NetworkSystem::ClientProcessInputReceived(ClientSocketComponent& socketComponent, sf::Packet& packet)
+{
+    Level* level = Application::Instance->GetCurrentLevel().get();
+    
+    uint8_t playerId;
+    packet >> playerId;
+    
+    InputArray& inputArray = level->GetComponent<InputArray>(playerId);
+    packet >> inputArray;
 }

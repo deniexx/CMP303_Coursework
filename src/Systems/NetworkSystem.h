@@ -9,6 +9,7 @@ struct NewPlayerMessage;
 
 namespace sf
 {
+    class Packet;
     class TcpSocket;
 }
 
@@ -37,15 +38,18 @@ private:
     
     ServerSocketComponent& GetServerSocketComponent();
     ClientSocketComponent& GetClientSocketComponent();
+
+    void RedistributePacket(ServerSocketComponent& socketComponent, sf::TcpSocket* client, sf::Packet& packet);
     
     /* ------------------------ SERVER ------------------------ */
     void ServerAcceptConnections(ServerSocketComponent& socketComponent);
     void ServerReceivePackets(ServerSocketComponent& socketComponent);
     void ServerCheckAuthentication(ServerSocketComponent& socketComponent, sf::TcpSocket* socket, const AuthenticationMessage& message);
+    void ServerUpdateInputArrays(ServerSocketComponent& socketComponent, sf::TcpSocket* client, sf::Packet& packet);
 
     /* ------------------------ CLIENT ------------------------ */
     void ClientReceivePackets(ClientSocketComponent& socketComponent);
     void ClientCheckAuthentication(ClientSocketComponent& socketComponent, const std::string& authenticationMessage);
     void ClientNewPlayerEvent(ClientSocketComponent& socketComponent, const NewPlayerMessage& message);
-    void ClientUpdatePhysicsForEntities(const PhysicsUpdateMessage& message);
+    void ClientProcessInputReceived(ClientSocketComponent& socketComponent, sf::Packet& packet);
 };

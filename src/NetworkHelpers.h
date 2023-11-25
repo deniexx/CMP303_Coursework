@@ -16,17 +16,4 @@ namespace NetworkHelpers
 			transComp.m_y = message.m_y;
 		}
     }
-
-	static void UpdateInputForEntity(const InputUpdateMessage& message)
-	{
-		Level* level = Application::Instance->GetCurrentLevel().get();
-
-		if (level->HasComponent<InputComponent>(message.m_playerID))
-		{
-			InputComponent& inputComp = level->GetComponent<InputComponent>(message.m_playerID);
-			inputComp.m_moveInput = message.m_moveInput;
-			inputComp.m_jumpInput = message.m_jumpInput;
-			inputComp.m_attackInput = message.m_attackInput;
-		}
-	}
 };

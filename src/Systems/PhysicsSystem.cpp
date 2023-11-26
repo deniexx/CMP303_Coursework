@@ -46,7 +46,10 @@ void PhysicsSystem::UpdateSystem(float deltaTime)
             }
             continue;
             */
-
+            
+            // @TODO: Figure out the best way to handle missed packages,
+            // One potential solution is to also send the player last position before input recording started again so we can restore his state
+            // and then continue input interpolation from there
             InputArray& inputArray = level->GetComponent<InputArray>(player);
             if (!inputArray.m_inputs.empty())
             {

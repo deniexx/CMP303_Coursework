@@ -52,4 +52,5 @@ private:
     void ClientCheckAuthentication(ClientSocketComponent& socketComponent, const std::string& authenticationMessage);
     void ClientNewPlayerEvent(ClientSocketComponent& socketComponent, const NewPlayerMessage& message);
     void ClientProcessInputReceived(ClientSocketComponent& socketComponent, sf::Packet& packet);
+    void ClientProcessFailedAuthentication(ClientSocketComponent& socketComponent, sf::Packet& packet);
 };

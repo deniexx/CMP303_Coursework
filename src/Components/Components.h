@@ -101,6 +101,7 @@ struct MovementComponent
 	//
 	//float m_interpAlpha = 0.f;
 	
+    sf::Vector2f m_lastPositionBeforeNetUpdate = sf::Vector2f(0.f, 0.f);
 	float m_maxSpeed = 300;
 	float m_acceleration = 150;
 	float m_velocityInterp = 0;

@@ -1,10 +1,11 @@
 ﻿#include "NetworkSystem.h"
 
-#include <filesystem>
+#include "SFML/System/Time.hpp"
+
 #include <iostream>
 
+#include "../Utilities/MathUtils.h"
 #include "../NetworkHelpers.h"
-#include "SFML/System/Time.hpp"
 #include "../Core/Application.h"
 #include "../Messages/Messages.h"
 
@@ -188,10 +189,16 @@ void NetworkSystem::ServerCheckAuthentication(ServerSocketComponent& socketCompo
     }
     else
     {
+        FailedAuthenticationMessage failedAuthMessage;
+        failedAuthMessage.reason = "Server was not able to authenticate user!";
+
+        sf::Packet packet;
+        packet << FAILEDAUTHENTICATION_EVENTID;
+        packet << failedAuthMessage;
+        socket->send(packet);
+        socket->disconnect();
         socketComponent.m_socketSelector.remove(*socket);
         std::erase(socketComponent.m_tcpSockets, socket);
-        socket->disconnect();
-        // @TODO: Stop connection, because this is not the correct server
     }
 }
 
@@ -201,14 +208,27 @@ void NetworkSystem::ServerUpdateInputArrays(ServerSocketComponent& socketCompone
     
     uint8_t playerId;
     packet >> playerId;
-    
+
+    sf::Vector2f lastSavedPos;
     InputArray& inputArray = level->GetComponent<InputArray>(playerId);
     packet >> inputArray;
+    packet >> lastSavedPos;
+
+    MovementComponent& moveComp = level->GetComponent<MovementComponent>(playerId);
+
+    // If the delta in position is more than the acceptable amount, fix it up
+    if (Length(moveComp.m_lastPositionBeforeNetUpdate - lastSavedPos) > ACCEPTABLE_POSITION_DELTA)
+    {
+        TransformComponent& transComp = level->GetComponent<TransformComponent>(playerId);
+        transComp.m_x = lastSavedPos.x;
+        transComp.m_y = lastSavedPos.y;
+    }
 
     sf::Packet packetToSend;
     packetToSend << INPUTUPDATE_EVENTID;
     packetToSend << playerId;
     packetToSend << inputArray;
+    packetToSend << lastSavedPos;
     RedistributePacket(socketComponent, client, packetToSend);
 }
 
@@ -258,6 +278,11 @@ void NetworkSystem::ClientReceivePackets(ClientSocketComponent& socketComponent)
                 ClientProcessInputReceived(socketComponent, packet);
             }
             break;
+        case FAILEDAUTHENTICATION_EVENTID:
+            {
+                ClientProcessFailedAuthentication(socketComponent, packet);
+            }
+            break;
         }
     }
 }
@@ -278,7 +303,8 @@ void NetworkSystem::ClientCheckAuthentication(ClientSocketComponent& socketCompo
     }
     else
     {
-        // @TODO: Stop connection, because this is not the correct server
+        socketComponent.m_tcpSocket.disconnect();
+        // Return to main menu with a message
     }
 }
 
@@ -299,7 +325,28 @@ void NetworkSystem::ClientProcessInputReceived(ClientSocketComponent& socketComp
     
     uint8_t playerId;
     packet >> playerId;
-    
+
+    sf::Vector2f lastSavedPos;
     InputArray& inputArray = level->GetComponent<InputArray>(playerId);
     packet >> inputArray;
+    packet >> lastSavedPos;
+    
+    MovementComponent& moveComp = level->GetComponent<MovementComponent>(playerId);
+
+    // If the delta in position is more than the acceptable amount, fix it up
+    if (Length(moveComp.m_lastPositionBeforeNetUpdate - lastSavedPos) > ACCEPTABLE_POSITION_DELTA)
+    {
+        TransformComponent& transComp = level->GetComponent<TransformComponent>(playerId);
+        transComp.m_x = lastSavedPos.x;
+        transComp.m_y = lastSavedPos.y;
+    }
+}
+
+void NetworkSystem::ClientProcessFailedAuthentication(ClientSocketComponent& socketComponent, sf::Packet& packet)
+{
+    FailedAuthenticationMessage message;
+    packet >> message;
+
+    std::cout << message.reason << '\n';
+    socketComponent.m_tcpSocket.disconnect();
 }

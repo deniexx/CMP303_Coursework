@@ -13,12 +13,12 @@ void Level::Begin()
 	m_entities.push_back(NETWORK_ENTITY);
 
 #if DEBUG
-	std::cout << "Server";
+	std::cout << "Server\n";
 	CreatePlayer();
 	EmplaceComponent<ServerSocketComponent>(NETWORK_ENTITY);
 	EmplaceComponent<LastPhysicsState>(NETWORK_ENTITY);
 #else
-	std::cout << "Client";
+	std::cout << "Client\n";
 	EmplaceComponent<ClientSocketComponent>(NETWORK_ENTITY);
 #endif
 

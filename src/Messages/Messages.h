@@ -2,13 +2,14 @@
 
 #include <cstdint>
 #include <string>
-#include <SFML/Network/IpAddress.hpp>
+#include "../Components/Components.h"
 
 // @NOTE: Every message must have an ID
 static const uint8_t AUTHENTICATE_EVENTID = 255;
 static const uint8_t NEWPLAYER_EVENTID = 0;
 static const uint8_t PHYSICSUPDATE_EVENTID = 1;
 static const uint8_t INPUTUPDATE_EVENTID = 2;
+static const uint8_t FAILEDAUTHENTICATION_EVENTID = 254;
 
 #pragma region Authentication
 struct AuthenticationMessage
@@ -25,6 +26,21 @@ inline sf::Packet& operator <<(sf::Packet& packet, const AuthenticationMessage& 
 inline sf::Packet& operator >>(sf::Packet& packet, AuthenticationMessage& m)
 {
     return packet >> m.m_authenticationMessage >> m.m_playerName;
+}
+
+struct FailedAuthenticationMessage
+{
+    std::string reason;
+};
+
+inline sf::Packet& operator <<(sf::Packet& packet, const FailedAuthenticationMessage m)
+{
+    return packet << m.reason;
+}
+
+inline sf::Packet& operator >>(sf::Packet& packet, FailedAuthenticationMessage& m)
+{
+    return packet >> m.reason;
 }
 #pragma endregion 
 
@@ -78,6 +94,16 @@ inline sf::Packet& operator <<(sf::Packet& packet, const InputArray& m)
     }
 
     return packet;
+}
+
+inline sf::Packet& operator <<(sf::Packet& packet, const sf::Vector2f m)
+{
+    return packet << m.x << m.y;
+}
+
+inline sf::Packet& operator >>(sf::Packet& packet, sf::Vector2f m)
+{
+    return packet >> m.x >> m.y;
 }
 
 inline sf::Packet& operator >>(sf::Packet& packet, InputArray& m)

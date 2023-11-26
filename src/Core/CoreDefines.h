@@ -5,6 +5,7 @@
 typedef uint32_t Entity;
 
 #define NETWORK_ENTITY 0
+#define ACCEPTABLE_POSITION_DELTA 10.f
 #define AUTHENTICATION_MESSAGE_SERVER "Alehandro"
 #define AUTHENTICATION_MESSAGE_CLIENT "Ruzmarin"
 

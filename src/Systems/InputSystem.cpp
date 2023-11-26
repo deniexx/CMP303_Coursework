@@ -79,6 +79,9 @@ void InputSystem::UpdateSystem(float deltaTime)
 
         InputArray& inputArray = level->GetComponent<InputArray>(player);
         inputArray.m_inputs.push_back(comp);
+
+
+        MovementComponent& moveComp = level->GetComponent<MovementComponent>(player);
         break;
     }
 }
@@ -95,11 +98,13 @@ void InputSystem::SendUpdate()
     if (!level->HasComponent<InputArray>(level->GetLocalPlayerID())) return;
 
     InputArray& inputArr = level->GetComponent<InputArray>(level->GetLocalPlayerID());
-    
+    MovementComponent& movementComp = level->GetComponent<MovementComponent>(level->GetLocalPlayerID());
+
     sf::Packet packet;
     packet << INPUTUPDATE_EVENTID;
     packet << level->GetLocalPlayerID();
     packet << inputArr;
+    packet << movementComp.m_lastPositionBeforeNetUpdate;
 
     if (!level->IsServer())
     {
@@ -116,5 +121,6 @@ void InputSystem::SendUpdate()
         }
     }
     inputArr.m_inputs.clear();
-
+    TransformComponent& transformComp = level->GetComponent<TransformComponent>(level->GetLocalPlayerID());
+    movementComp.m_lastPositionBeforeNetUpdate = sf::Vector2f(transformComp.m_x, transformComp.m_y);
 }

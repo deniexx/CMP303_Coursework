@@ -18,10 +18,11 @@ public:
 
 private:
     
-    void ResimulatePhysics(Entity player, Level* level, float deltaTime);
+    sf::Vector2f ResimulatePhysics(Entity player, Level* level, float deltaTime);
     
     void UpdateMovementComponent(Entity player, Level* level, InputComponent& inputComponent);
-    void CalculatePhysics(Entity player, Level* level, float deltaTime);
+    sf::Vector2f CalculatePhysics(Entity player, Level* level, float deltaTime);
+    void UpdateTransformComponent(Entity player, Level* level, sf::Vector2f offset);
 
     bool IsPlayerOnGround(const TransformComponent& transformComp);
     bool IsFalling(const MovementComponent& movementComp);

@@ -1,6 +1,5 @@
 #include "HitSystem.h"
 #include "../Core/Application.h"
-#include "../Utilities/MathUtils.h"
 #include <cassert>
 
 void HitSystem::BeginSystem()
@@ -18,6 +17,9 @@ void HitSystem::UpdateSystem(float deltaTime)
 		if (!level->HasComponent<InputComponent>(player)) continue;
 		if (!level->HasComponent<HitComponent>(player)) continue;
 
+		// @TODO: Fix desync when hitting enemies
+		// @TODO: Potential fix: each player only simulates their own hits and if they score, send a message to the server
+		// @TODO: No need to have server authoritative design at this point
 		InputComponent& inputComp = level->GetComponent<InputComponent>(player);
 		HitComponent& hitComp = level->GetComponent<HitComponent>(player);
 

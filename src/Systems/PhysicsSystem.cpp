@@ -15,17 +15,58 @@ void PhysicsSystem::UpdateSystem(float deltaTime)
     
     for (Entity player : players)
     {
-        // @TODO: Update this so that local players update every frame using the input component, while a remote player uses the InputArray
-        // This might be the case if the player is currently being initialized, although it shouldn't really happen ever
         if (!level->HasComponent<MovementComponent>(player)) continue;
-
-        if (!level->IsEntityLocalPlayer(player))
-            ResimulatePhysics(player, level, deltaTime);
-        
         if (!level->HasComponent<InputComponent>(player)) continue;
+
         InputComponent& inputComponent = level->GetComponent<InputComponent>(player);
+
+        // Interpolation position if we are not the local player
+        if (!level->IsEntityLocalPlayer(player))
+        {
+            /*
+            sf::Vector2f offset = ResimulatePhysics(player, level, deltaTime);
+            UpdateMovementComponent(player, level, inputComponent);
+            offset += CalculatePhysics(player, level, deltaTime);
+
+            MovementComponent& movementComp = level->GetComponent<MovementComponent>(player);
+            TransformComponent& transComp = level->GetComponent<TransformComponent>(player);
+            
+            sf::Vector2f trans(transComp.m_x, transComp.m_y);
+            movementComp.m_interpolationTarget = trans + offset;
+            movementComp.m_interpAlpha += deltaTime;
+            
+            sf::Vector2f lerpedPos = Lerp<sf::Vector2f>(movementComp.m_startingInterpPosition, movementComp.m_interpolationTarget, movementComp.m_interpAlpha);
+            transComp.m_x = lerpedPos.x;
+            transComp.m_y = lerpedPos.y;
+
+            if (movementComp.m_interpAlpha > 1)
+            {
+                movementComp.m_startingInterpPosition = trans;
+                movementComp.m_interpAlpha = 0; 
+            }
+            continue;
+            */
+
+            InputArray& inputArray = level->GetComponent<InputArray>(player);
+            if (!inputArray.m_inputs.empty())
+            {
+                inputComponent = inputArray.m_inputs[0];
+                UpdateMovementComponent(player, level, inputComponent);
+                sf::Vector2f offset = CalculatePhysics(player, level, deltaTime);
+                UpdateTransformComponent(player, level, offset);
+
+                if (inputArray.m_inputs.size() > 1)
+                {
+                    inputArray.m_inputs.erase(inputArray.m_inputs.begin());
+                }
+            }
+            continue;
+        }
+
+        // If we are local player, just update position
         UpdateMovementComponent(player, level, inputComponent);
-        CalculatePhysics(player, level, deltaTime);
+        sf::Vector2f offset = CalculatePhysics(player, level, deltaTime);
+        UpdateTransformComponent(player, level, offset);
     }
 }
 
@@ -69,26 +110,40 @@ void PhysicsSystem::SendUpdate()
     }
 }
 
-void PhysicsSystem::ResimulatePhysics(Entity player, Level* level, float deltaTime)
+sf::Vector2f PhysicsSystem::ResimulatePhysics(Entity player, Level* level, float deltaTime)
 {
-    if (!level->HasComponent<InputArray>(player)) return;
+    if (!level->HasComponent<InputArray>(player)) return sf::Vector2f(0.f, 0.f);
 
     InputArray& inputArray = level->GetComponent<InputArray>(player);
 
-    if (inputArray.m_inputs.empty()) return;
+    if (inputArray.m_inputs.empty()) return sf::Vector2f(0.f, 0.f);
 
     // @TODO: Do not just set the transform component after this, but save it as an interpolation target and interpolate to that position smoothly
     // @TODO: Update the calculate physics to only calculate physics and return a position vector
     // @TODO: Add another function that can be called to fill up the transform component with the newly found position variables
+
+    // Here we use a hacky fix to make sure that when resimulating we have the appropriate player position
+    TransformComponent& transComp = level->GetComponent<TransformComponent>(player);
+    sf::Vector2f oldTransform(transComp.m_x, transComp.m_y);
+    
+    sf::Vector2f totalOffset = sf::Vector2f(0.f, 0.f);
     for (size_t i = 0; i < inputArray.m_inputs.size() - 1; ++i)
     {
         UpdateMovementComponent(player, level, inputArray.m_inputs[i]);
-        CalculatePhysics(player, level, deltaTime);
+        sf::Vector2f offset = CalculatePhysics(player, level, deltaTime);
+        totalOffset += offset;
+        UpdateTransformComponent(player, level, offset);
     }
 
     InputComponent& inputComp = level->GetComponent<InputComponent>(player);
     inputComp = inputArray.m_inputs[inputArray.m_inputs.size() - 1];
     inputArray.m_inputs.clear();
+
+    // Here we reset it back so that there is no jerky jumping when interpolating
+    transComp.m_x = oldTransform.x;
+    transComp.m_y = oldTransform.y;
+
+    return totalOffset;
 }
 
 void PhysicsSystem::UpdateMovementComponent(Entity player, Level* level, InputComponent& inputComponent)
@@ -97,7 +152,7 @@ void PhysicsSystem::UpdateMovementComponent(Entity player, Level* level, InputCo
     movementComp.m_inputVelocity = sf::Vector2f(inputComponent.m_moveInput, inputComponent.m_jumpInput * movementComp.m_jumpStrength);
 }
 
-void PhysicsSystem::CalculatePhysics(Entity player, Level* level, float deltaTime)
+sf::Vector2f PhysicsSystem::CalculatePhysics(Entity player, Level* level, float deltaTime)
 {
     TransformComponent& transComp = level->GetComponent<TransformComponent>(player);
     MovementComponent& movementComp = level->GetComponent<MovementComponent>(player);
@@ -127,8 +182,9 @@ void PhysicsSystem::CalculatePhysics(Entity player, Level* level, float deltaTim
     movementComp.m_currentVelocity += movementComp.m_impulseToBeApplied * deltaTime;
     movementComp.m_impulseToBeApplied = sf::Vector2f(0.f, 0.f);
 
-    transComp.m_x += movementComp.m_currentVelocity.x * deltaTime;
-    transComp.m_y += movementComp.m_currentVelocity.y * deltaTime;
+    sf::Vector2f toReturn = sf::Vector2f(0.f, 0.f);
+    toReturn.x = movementComp.m_currentVelocity.x * deltaTime;
+    toReturn.y = movementComp.m_currentVelocity.y * deltaTime;
 
     if (abs(movementComp.m_currentVelocity.x) < 0.0001f)
         movementComp.m_currentVelocity.x = 0.f;
@@ -143,6 +199,14 @@ void PhysicsSystem::CalculatePhysics(Entity player, Level* level, float deltaTim
     }
 
     movementComp.m_inputVelocity = sf::Vector2f(0.f, 0.f);
+    return toReturn;
+}
+
+void PhysicsSystem::UpdateTransformComponent(Entity player, Level* level, sf::Vector2f offset)
+{
+    TransformComponent& transformComp = level->GetComponent<TransformComponent>(player);
+    transformComp.m_x += offset.x;
+    transformComp.m_y += offset.y;
 }
 
 bool PhysicsSystem::IsPlayerOnGround(const TransformComponent& transformComp)

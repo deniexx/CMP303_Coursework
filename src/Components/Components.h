@@ -96,6 +96,11 @@ struct MovementComponent
 	sf::Vector2f m_inputVelocity = sf::Vector2f(0.f, 0.f);
 	sf::Vector2f m_impulseToBeApplied = sf::Vector2f(0.f, 0.f);
 	sf::Vector2f m_currentVelocity = sf::Vector2f(0.f, 0.f);
+	//sf::Vector2f m_interpolationTarget = sf::Vector2f(0.f, 0.f);
+	//sf::Vector2f m_startingInterpPosition = sf::Vector2f(0.f, 0.f);
+	//
+	//float m_interpAlpha = 0.f;
+	
 	float m_maxSpeed = 300;
 	float m_acceleration = 150;
 	float m_velocityInterp = 0;

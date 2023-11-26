@@ -166,12 +166,16 @@ void NetworkSystem::ServerCheckAuthentication(ServerSocketComponent& socketCompo
         sf::Packet packet;
         for (Entity player : players)
         {
+            TransformComponent& comp = level->GetComponent<TransformComponent>(player);
+            
             packet << NEWPLAYER_EVENTID;
             
             NewPlayerMessage newPlayerMessage;
             newPlayerMessage.m_playerID = player;
             newPlayerMessage.m_playerName = level->GetComponent<TagComponent>(player).m_tag;
             newPlayerMessage.m_playerConnection = (sf::Int8)PlayerConnectionType::ClientRemote;
+            newPlayerMessage.m_x = comp.m_x;
+            newPlayerMessage.m_y = comp.m_y;
             if (socketComponent.m_tcpSockets.size() > 1)
                 newPlayerMessage.m_fallbackAddress = socketComponent.m_tcpSockets[1]->getRemoteAddress().toString();
             else
@@ -280,8 +284,13 @@ void NetworkSystem::ClientCheckAuthentication(ClientSocketComponent& socketCompo
 
 void NetworkSystem::ClientNewPlayerEvent(ClientSocketComponent& socketComponent, const NewPlayerMessage& message)
 {
+    Level* level = Application::Instance->GetCurrentLevel().get();
     const bool isLocal = message.m_playerConnection == (sf::Int8)PlayerConnectionType::ClientLocal;
-    Application::Instance->GetCurrentLevel()->CreatePlayer(message.m_playerID, message.m_playerName, isLocal);
+    uint8_t playerId = level->CreatePlayer(message.m_playerID, message.m_playerName, isLocal);
+
+    TransformComponent& transComp = level->GetComponent<TransformComponent>(playerId);
+    transComp.m_x = message.m_x;
+    transComp.m_y = message.m_y;
 }
 
 void NetworkSystem::ClientProcessInputReceived(ClientSocketComponent& socketComponent, sf::Packet& packet)

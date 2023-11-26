@@ -35,16 +35,18 @@ struct NewPlayerMessage
     std::string m_playerName = std::string();
     sf::Int8 m_playerConnection = (sf::Int8)PlayerConnectionType::None;
     std::string m_fallbackAddress = std::string();
+
+    float m_x = 0, m_y = 0;
 };
 
 inline sf::Packet& operator <<(sf::Packet& packet, const NewPlayerMessage& m)
 {
-    return packet << m.m_playerID << m.m_playerName << (sf::Int8)m.m_playerConnection << m.m_fallbackAddress;
+    return packet << m.m_playerID << m.m_playerName << (sf::Int8)m.m_playerConnection << m.m_fallbackAddress << m.m_x << m.m_y;
 }
 
 inline sf::Packet& operator >>(sf::Packet& packet, NewPlayerMessage& m)
 {
-    return packet >> m.m_playerID >> m.m_playerName >> m.m_playerConnection >> m.m_fallbackAddress;
+    return packet >> m.m_playerID >> m.m_playerName >> m.m_playerConnection >> m.m_fallbackAddress >> m.m_x >> m.m_y;
 }
 #pragma endregion 
 

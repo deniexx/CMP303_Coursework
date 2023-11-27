@@ -1,6 +1,8 @@
 #include "HitSystem.h"
 #include "../Core/Application.h"
 #include <cassert>
+#include "../Messages/Messages.h"
+#include "../NetworkHelpers.h"
 
 void HitSystem::BeginSystem()
 {
@@ -16,6 +18,7 @@ void HitSystem::UpdateSystem(float deltaTime)
 	{
 		if (!level->HasComponent<InputComponent>(player)) continue;
 		if (!level->HasComponent<HitComponent>(player)) continue;
+		if (!level->IsEntityLocalPlayer(player)) continue;
 
 		// @TODO: Fix desync when hitting enemies
 		// @TODO: Potential fix: each player only simulates their own hits and if they score, send a message to the server
@@ -39,37 +42,30 @@ void HitSystem::UpdateSystem(float deltaTime)
 
 				if (hitRect.intersects(spriteComp.m_sprite.getGlobalBounds()))
 				{
-					MovementComponent& hitMoveComp = level->GetComponent<MovementComponent>(inPlayer);
-					HitComponent& hitHitComp = level->GetComponent<HitComponent>(inPlayer);
 					TransformComponent& hitTransComp = level->GetComponent<TransformComponent>(inPlayer);
-					
-					hitMoveComp.m_impulseOverridesMovement = true;
-					sf::Vector2f hitPos(hitTransComp.m_x, hitTransComp.m_y);
-					sf::Vector2f hitterPos(pTransComp.m_x, pTransComp.m_y);
 
-					sf::Vector2f impulseDirection = hitPos - hitterPos;
-
-					// Get length of vector
-					float vectorLength = sqrt(impulseDirection.x * impulseDirection.x + impulseDirection.y * impulseDirection.y);
-					
-					// Normalize vector
-					if (vectorLength > 0)
+					if (!NetworkHelpers::ApplyHit(player, inPlayer, pTransComp, hitTransComp)) assert(false);
+									
+					if (level->IsServer())
 					{
-						impulseDirection /= vectorLength;
+						// Redistribute hit packages
 					}
 					else
 					{
-                        // We could not normalize velocity, check this out
-						assert(false);
+						sf::Packet packet;
+						HitRegMessage message;
+						message.m_hitId = inPlayer;
+						message.m_hitterId = player;
+						message.m_hitX = hitTransComp.m_x;
+						message.m_hitY = hitTransComp.m_y;
+						message.m_hitterX = pTransComp.m_x;
+						message.m_hitterY = pTransComp.m_y;
+						packet << HITREG_EVENTID;
+						packet << message;
+
+						ClientSocketComponent& socketComp = level->GetComponent<ClientSocketComponent>(NETWORK_ENTITY);
+						socketComp.m_tcpSocket.send(packet);
 					}
-
-					impulseDirection.y = -0.5f;
-					impulseDirection.x = impulseDirection.x < 0 ? -0.5f : 0.5f;
-
-					hitHitComp.m_damageMultiplier *= 1.1f;
-					float impulseAmount = hitComp.m_impuseOnHit * hitHitComp.m_damageMultiplier;
-
-					hitMoveComp.m_impulseToBeApplied = impulseDirection * impulseAmount;
 				}
 			}
 		}

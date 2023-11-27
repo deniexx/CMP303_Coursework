@@ -10,6 +10,6 @@ class HitSystem : public ISystem
 	void DestroySystem() override;
 
 	float TimeBetweenUpdates() override { return 99999999.f; }
-	void SendUpdate() override {}
+	void SendUpdate() override {};
 };
 

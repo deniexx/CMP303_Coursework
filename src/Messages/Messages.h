@@ -9,6 +9,7 @@ static const uint8_t AUTHENTICATE_EVENTID = 255;
 static const uint8_t NEWPLAYER_EVENTID = 0;
 static const uint8_t PHYSICSUPDATE_EVENTID = 1;
 static const uint8_t INPUTUPDATE_EVENTID = 2;
+static const uint8_t HITREG_EVENTID = 3;
 static const uint8_t FAILEDAUTHENTICATION_EVENTID = 254;
 
 #pragma region Authentication
@@ -118,6 +119,27 @@ inline sf::Packet& operator >>(sf::Packet& packet, InputArray& m)
     }
 
     return packet;
+}
+#pragma endregion
+
+#pragma region HitReg
+struct HitRegMessage
+{
+    uint8_t m_hitterId = -1;
+    uint8_t m_hitId = -1;
+
+    // hit location
+    float m_hitX = 0, m_hitY = 0, m_hitterX = 0, m_hitterY = 0;
+};
+
+inline sf::Packet& operator <<(sf::Packet& packet, const HitRegMessage& m)
+{
+    return packet << m.m_hitId << m.m_hitterId << m.m_hitX << m.m_hitY << m.m_hitterX << m.m_hitterY;
+}
+
+inline sf::Packet& operator >>(sf::Packet& packet, HitRegMessage& m)
+{
+    return packet >> m.m_hitId >> m.m_hitterId >> m.m_hitX >> m.m_hitY >> m.m_hitterX >> m.m_hitterY;;
 }
 #pragma endregion
 

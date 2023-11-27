@@ -46,6 +46,7 @@ private:
     void ServerReceivePackets(ServerSocketComponent& socketComponent);
     void ServerCheckAuthentication(ServerSocketComponent& socketComponent, sf::TcpSocket* socket, const AuthenticationMessage& message);
     void ServerUpdateInputArrays(ServerSocketComponent& socketComponent, sf::TcpSocket* client, sf::Packet& packet);
+    void ServerUpdateHitReg(ServerSocketComponent& socketComponent, sf::TcpSocket* client, sf::Packet& packet);
 
     /* ------------------------ CLIENT ------------------------ */
     void ClientReceivePackets(ClientSocketComponent& socketComponent);

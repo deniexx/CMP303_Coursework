@@ -127,6 +127,11 @@ void NetworkSystem::ServerReceivePackets(ServerSocketComponent& socketComponent)
 					        ServerUpdateInputArrays(socketComponent, client, packet);
 					    }
 					    break;
+                    case HITREG_EVENTID:
+                        {
+                            ServerUpdateHitReg(socketComponent, client, packet);
+                        }
+                        break;
                     }
                 }
             }
@@ -224,12 +229,18 @@ void NetworkSystem::ServerUpdateInputArrays(ServerSocketComponent& socketCompone
         transComp.m_y = lastSavedPos.y;
     }
 
-    sf::Packet packetToSend;
-    packetToSend << INPUTUPDATE_EVENTID;
-    packetToSend << playerId;
-    packetToSend << inputArray;
-    packetToSend << lastSavedPos;
-    RedistributePacket(socketComponent, client, packetToSend);
+    RedistributePacket(socketComponent, client, packet);
+}
+
+void NetworkSystem::ServerUpdateHitReg(ServerSocketComponent& socketComponent, sf::TcpSocket* client, sf::Packet& packet)
+{
+    HitRegMessage message;
+    packet >> message;
+
+    TransformComponent hitterTrans(message.m_hitterX, message.m_hitterY);
+    TransformComponent hitTrans(message.m_hitX, message.m_hitY);
+    NetworkHelpers::ApplyHit(message.m_hitterId, message.m_hitId, hitterTrans, hitTrans);
+    RedistributePacket(socketComponent, client, packet);
 }
 
 void NetworkSystem::ClientUpdate()
@@ -281,6 +292,15 @@ void NetworkSystem::ClientReceivePackets(ClientSocketComponent& socketComponent)
         case FAILEDAUTHENTICATION_EVENTID:
             {
                 ClientProcessFailedAuthentication(socketComponent, packet);
+            }
+            break;
+        case HITREG_EVENTID:
+            {
+                HitRegMessage message;
+                packet >> message;
+                TransformComponent hitterTrans(message.m_hitterX, message.m_hitterY);
+                TransformComponent hitTrans(message.m_hitX, message.m_hitY);
+                NetworkHelpers::ApplyHit(message.m_hitterId, message.m_hitId, hitterTrans, hitTrans);
             }
             break;
         }

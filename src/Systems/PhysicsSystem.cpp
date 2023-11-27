@@ -23,6 +23,11 @@ void PhysicsSystem::UpdateSystem(float deltaTime)
         // Interpolation position if we are not the local player
         if (!level->IsEntityLocalPlayer(player))
         {
+            // @TODO: Go back to interpolation(, with very low frequency of position updates from the server?)
+            // @TODO: Figure out end interpolation position and start one, upon receiving an update, set interp alpha to 0
+            // @TODO: Hopefully it works properly (server can send end interp values)
+            // @TODO: Figure out how to determine hits on clients, do we ask the server if the hit is valid? if so how do we determine that?
+
             /*
             sf::Vector2f offset = ResimulatePhysics(player, level, deltaTime);
             UpdateMovementComponent(player, level, inputComponent);

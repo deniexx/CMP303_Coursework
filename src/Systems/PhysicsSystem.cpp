@@ -23,45 +23,34 @@ void PhysicsSystem::UpdateSystem(float deltaTime)
         // Interpolation position if we are not the local player
         if (!level->IsEntityLocalPlayer(player))
         {
-            // @TODO: Go back to interpolation(, with very low frequency of position updates from the server?)
-            // @TODO: Figure out end interpolation position and start one, upon receiving an update, set interp alpha to 0
-            // @TODO: Hopefully it works properly (server can send end interp values)
-            // @TODO: Figure out how to determine hits on clients, do we ask the server if the hit is valid? if so how do we determine that?
-
-            /*
-            sf::Vector2f offset = ResimulatePhysics(player, level, deltaTime);
-            UpdateMovementComponent(player, level, inputComponent);
-            offset += CalculatePhysics(player, level, deltaTime);
-
-            MovementComponent& movementComp = level->GetComponent<MovementComponent>(player);
-            TransformComponent& transComp = level->GetComponent<TransformComponent>(player);
-            
-            sf::Vector2f trans(transComp.m_x, transComp.m_y);
-            movementComp.m_interpolationTarget = trans + offset;
-            movementComp.m_interpAlpha += deltaTime;
-            
-            sf::Vector2f lerpedPos = Lerp<sf::Vector2f>(movementComp.m_startingInterpPosition, movementComp.m_interpolationTarget, movementComp.m_interpAlpha);
-            transComp.m_x = lerpedPos.x;
-            transComp.m_y = lerpedPos.y;
-
-            if (movementComp.m_interpAlpha > 1)
-            {
-                movementComp.m_startingInterpPosition = trans;
-                movementComp.m_interpAlpha = 0; 
-            }
-            continue;
-            */
-            
-            // @TODO: Figure out the best way to handle missed packages,
-            // One potential solution is to also send the player last position before input recording started again so we can restore his state
-            // and then continue input interpolation from there
+            // @TODO: If we are outside the acceptable delta, interpolate to the calculated position instead of just updating transform component
             InputArray& inputArray = level->GetComponent<InputArray>(player);
             if (!inputArray.m_inputs.empty())
             {
                 inputComponent = inputArray.m_inputs[0];
                 UpdateMovementComponent(player, level, inputComponent);
                 sf::Vector2f offset = CalculatePhysics(player, level, deltaTime);
-                UpdateTransformComponent(player, level, offset);
+                MovementComponent& moveComp = level->GetComponent<MovementComponent>(player);
+
+                if (moveComp.m_interpAlpha < 1.f)
+                {
+                    TransformComponent& transComp = level->GetComponent<TransformComponent>(player);
+
+                    moveComp.m_interpolationTarget += offset;
+                    sf::Vector2f lerped = Lerp<sf::Vector2f>(moveComp.m_startingInterpPosition, moveComp.m_interpolationTarget, moveComp.m_interpAlpha);
+                    
+                    if (lerped.y > 550.f)
+                        lerped.y = 550.f;
+
+                    moveComp.m_interpAlpha += deltaTime * 10.f;
+                    transComp.m_x = lerped.x;
+                    transComp.m_y = lerped.y;
+                }
+                else
+                {
+                    UpdateTransformComponent(player, level, offset);
+                }
+
 
                 if (inputArray.m_inputs.size() > 1)
                 {
@@ -190,10 +179,6 @@ sf::Vector2f PhysicsSystem::CalculatePhysics(Entity player, Level* level, float 
     movementComp.m_currentVelocity += movementComp.m_impulseToBeApplied * deltaTime;
     movementComp.m_impulseToBeApplied = sf::Vector2f(0.f, 0.f);
 
-    sf::Vector2f toReturn = sf::Vector2f(0.f, 0.f);
-    toReturn.x = movementComp.m_currentVelocity.x * deltaTime;
-    toReturn.y = movementComp.m_currentVelocity.y * deltaTime;
-
     if (abs(movementComp.m_currentVelocity.x) < 0.0001f)
         movementComp.m_currentVelocity.x = 0.f;
     if (abs(movementComp.m_currentVelocity.y) < 0.0001f)
@@ -205,6 +190,10 @@ sf::Vector2f PhysicsSystem::CalculatePhysics(Entity player, Level* level, float 
         transComp.m_y = 550.f;
         movementComp.m_currentVelocity.y = 0.f;
     }
+
+    sf::Vector2f toReturn = sf::Vector2f(0.f, 0.f);
+    toReturn.x = movementComp.m_currentVelocity.x * deltaTime;
+    toReturn.y = movementComp.m_currentVelocity.y * deltaTime;
 
     movementComp.m_inputVelocity = sf::Vector2f(0.f, 0.f);
     return toReturn;

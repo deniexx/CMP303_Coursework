@@ -97,12 +97,12 @@ inline sf::Packet& operator <<(sf::Packet& packet, const InputArray& m)
     return packet;
 }
 
-inline sf::Packet& operator <<(sf::Packet& packet, const sf::Vector2f m)
+inline sf::Packet& operator <<(sf::Packet& packet, const sf::Vector2f& m)
 {
     return packet << m.x << m.y;
 }
 
-inline sf::Packet& operator >>(sf::Packet& packet, sf::Vector2f m)
+inline sf::Packet& operator >>(sf::Packet& packet, sf::Vector2f& m)
 {
     return packet >> m.x >> m.y;
 }

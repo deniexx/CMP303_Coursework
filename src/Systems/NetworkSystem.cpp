@@ -224,10 +224,15 @@ void NetworkSystem::ServerUpdateInputArrays(ServerSocketComponent& socketCompone
     // If the delta in position is more than the acceptable amount, fix it up
     if (Length(moveComp.m_lastPositionBeforeNetUpdate - lastSavedPos) > ACCEPTABLE_POSITION_DELTA)
     {
+        // @TODO: Update this to save data in the movement component and interpolate positions
+        MovementComponent& moveComp = level->GetComponent<MovementComponent>(playerId);
         TransformComponent& transComp = level->GetComponent<TransformComponent>(playerId);
-        transComp.m_x = lastSavedPos.x;
-        transComp.m_y = lastSavedPos.y;
+        moveComp.m_interpolationTarget = lastSavedPos;
+        moveComp.m_interpAlpha = 0.f;
+        moveComp.m_startingInterpPosition = sf::Vector2f(transComp.m_x, transComp.m_y);
     }
+
+    moveComp.m_lastPositionBeforeNetUpdate = lastSavedPos;
 
     RedistributePacket(socketComponent, client, packet);
 }
@@ -354,12 +359,24 @@ void NetworkSystem::ClientProcessInputReceived(ClientSocketComponent& socketComp
     MovementComponent& moveComp = level->GetComponent<MovementComponent>(playerId);
 
     // If the delta in position is more than the acceptable amount, fix it up
+    //if (Length(moveComp.m_lastPositionBeforeNetUpdate - lastSavedPos) > ACCEPTABLE_POSITION_DELTA)
+    //{
+    //    TransformComponent& transComp = level->GetComponent<TransformComponent>(playerId);
+    //    transComp.m_x = lastSavedPos.x;
+    //    transComp.m_y = lastSavedPos.y;
+    //}
+
     if (Length(moveComp.m_lastPositionBeforeNetUpdate - lastSavedPos) > ACCEPTABLE_POSITION_DELTA)
     {
+        // @TODO: Update this to save data in the movement component and interpolate positions
+        MovementComponent& moveComp = level->GetComponent<MovementComponent>(playerId);
         TransformComponent& transComp = level->GetComponent<TransformComponent>(playerId);
-        transComp.m_x = lastSavedPos.x;
-        transComp.m_y = lastSavedPos.y;
+        moveComp.m_interpolationTarget = lastSavedPos;
+        moveComp.m_interpAlpha = 0.f;
+        moveComp.m_startingInterpPosition = sf::Vector2f(transComp.m_x, transComp.m_y);
     }
+
+    moveComp.m_lastPositionBeforeNetUpdate = lastSavedPos;
 }
 
 void NetworkSystem::ClientProcessFailedAuthentication(ClientSocketComponent& socketComponent, sf::Packet& packet)

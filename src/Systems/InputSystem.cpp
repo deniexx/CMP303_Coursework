@@ -79,9 +79,6 @@ void InputSystem::UpdateSystem(float deltaTime)
 
         InputArray& inputArray = level->GetComponent<InputArray>(player);
         inputArray.m_inputs.push_back(comp);
-
-
-        MovementComponent& moveComp = level->GetComponent<MovementComponent>(player);
         break;
     }
 }

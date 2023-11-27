@@ -30,11 +30,17 @@ void Level::Begin()
 
 void Level::Update(float deltaTime)
 {
+	// Update systems first
 	for (auto& system : m_systems)
 	{
 		system->UpdateSystem(deltaTime);
+	}
 
-		if(lastUpdatedSystemFrame[system.get()] + system->TimeBetweenUpdates() < GetElapsedTime())
+	// Send network updates after!
+	// This was causing an issue when we sent messages right after updating systems
+	for (auto& system : m_systems)
+	{
+		if (lastUpdatedSystemFrame[system.get()] + system->TimeBetweenUpdates() < GetElapsedTime())
 		{
 			lastUpdatedSystemFrame[system.get()] = GetElapsedTime();
 			system->SendUpdate();

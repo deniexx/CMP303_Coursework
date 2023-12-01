@@ -19,10 +19,8 @@ void HitSystem::UpdateSystem(float deltaTime)
 		if (!level->HasComponent<InputComponent>(player)) continue;
 		if (!level->HasComponent<HitComponent>(player)) continue;
 		if (!level->IsEntityLocalPlayer(player)) continue;
+        if (!level->IsEntityLocalPlayer(player)) continue;
 
-		// @TODO: Fix desync when hitting enemies
-		// @TODO: Potential fix: each player only simulates their own hits and if they score, send a message to the server
-		// @TODO: No need to have server authoritative design at this point
 		InputComponent& inputComp = level->GetComponent<InputComponent>(player);
 		HitComponent& hitComp = level->GetComponent<HitComponent>(player);
 
@@ -49,6 +47,24 @@ void HitSystem::UpdateSystem(float deltaTime)
 					if (level->IsServer())
 					{
 						// Redistribute hit packages
+                        sf::Packet packet;
+                        HitRegMessage message;
+                        message.m_hitId = inPlayer;
+                        message.m_hitterId = player;
+                        message.m_hitX = hitTransComp.m_x;
+                        message.m_hitY = hitTransComp.m_y;
+                        message.m_hitterX = pTransComp.m_x;
+                        message.m_hitterY = pTransComp.m_y;
+
+                        packet << HITREG_EVENTID;
+                        packet << message;
+
+                        ServerSocketComponent& socketComp = level->GetComponent<ServerSocketComponent>(NETWORK_ENTITY);
+
+						for (sf::TcpSocket* socket : socketComp.m_tcpSockets)
+						{
+							socket->send(packet);
+						}
 					}
 					else
 					{

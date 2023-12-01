@@ -224,7 +224,6 @@ void NetworkSystem::ServerUpdateInputArrays(ServerSocketComponent& socketCompone
     // If the delta in position is more than the acceptable amount, fix it up
     if (Length(moveComp.m_lastPositionBeforeNetUpdate - lastSavedPos) > ACCEPTABLE_POSITION_DELTA)
     {
-        // @TODO: Update this to save data in the movement component and interpolate positions
         MovementComponent& moveComp = level->GetComponent<MovementComponent>(playerId);
         TransformComponent& transComp = level->GetComponent<TransformComponent>(playerId);
         moveComp.m_interpolationTarget = lastSavedPos;
@@ -368,7 +367,6 @@ void NetworkSystem::ClientProcessInputReceived(ClientSocketComponent& socketComp
 
     if (Length(moveComp.m_lastPositionBeforeNetUpdate - lastSavedPos) > ACCEPTABLE_POSITION_DELTA)
     {
-        // @TODO: Update this to save data in the movement component and interpolate positions
         MovementComponent& moveComp = level->GetComponent<MovementComponent>(playerId);
         TransformComponent& transComp = level->GetComponent<TransformComponent>(playerId);
         moveComp.m_interpolationTarget = lastSavedPos;

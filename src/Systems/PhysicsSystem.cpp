@@ -23,7 +23,6 @@ void PhysicsSystem::UpdateSystem(float deltaTime)
         // Interpolation position if we are not the local player
         if (!level->IsEntityLocalPlayer(player))
         {
-            // @TODO: If we are outside the acceptable delta, interpolate to the calculated position instead of just updating transform component
             InputArray& inputArray = level->GetComponent<InputArray>(player);
             if (!inputArray.m_inputs.empty())
             {
@@ -114,11 +113,7 @@ sf::Vector2f PhysicsSystem::ResimulatePhysics(Entity player, Level* level, float
     InputArray& inputArray = level->GetComponent<InputArray>(player);
 
     if (inputArray.m_inputs.empty()) return sf::Vector2f(0.f, 0.f);
-
-    // @TODO: Do not just set the transform component after this, but save it as an interpolation target and interpolate to that position smoothly
-    // @TODO: Update the calculate physics to only calculate physics and return a position vector
-    // @TODO: Add another function that can be called to fill up the transform component with the newly found position variables
-
+    
     // Here we use a hacky fix to make sure that when resimulating we have the appropriate player position
     TransformComponent& transComp = level->GetComponent<TransformComponent>(player);
     sf::Vector2f oldTransform(transComp.m_x, transComp.m_y);

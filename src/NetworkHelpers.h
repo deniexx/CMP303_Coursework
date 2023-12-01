@@ -18,7 +18,7 @@ namespace NetworkHelpers
 		}
     }
 
-    static bool ApplyHit(Entity hitter, Entity hit, TransformComponent& hitterTransComp, TransformComponent& hitTransComp)
+    static bool ApplyHit(Entity hitter, Entity hit, TransformComponent& hitterTransComp, TransformComponent& hitTransComp, uint8_t hitterId)
     {
 		Level* level = Application::Instance->GetCurrentLevel().get();
 
@@ -50,9 +50,19 @@ namespace NetworkHelpers
 		impulseDirection.x = impulseDirection.x < 0 ? -0.5f : 0.5f;
 
 		hitHitComp.m_damageMultiplier *= 1.1f;
+		hitHitComp.m_lastHitterId = hitterId;
 		float impulseAmount = hitterHitComp.m_impuseOnHit * hitHitComp.m_damageMultiplier;
 
 		hitMoveComp.m_impulseToBeApplied = impulseDirection * impulseAmount;
 		return true;
+    }
+
+	static void KillEntity(Entity id)
+    {
+    	Level* level = Application::Instance->GetCurrentLevel().get();
+    	DeleteComponent& deleteComp = level->GetComponent<DeleteComponent>(id);
+
+    	// @TODO: Add a check if the local player has died and if that is the case show a message on the screen
+    	deleteComp.m_markedForDelete = true;
     }
 };

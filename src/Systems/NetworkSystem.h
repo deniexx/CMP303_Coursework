@@ -4,6 +4,7 @@
 
 #include "ISystem.h"
 
+struct DeathEventMessage;
 struct PhysicsUpdateMessage;
 struct NewPlayerMessage;
 
@@ -54,4 +55,5 @@ private:
     void ClientNewPlayerEvent(ClientSocketComponent& socketComponent, const NewPlayerMessage& message);
     void ClientProcessInputReceived(ClientSocketComponent& socketComponent, sf::Packet& packet);
     void ClientProcessFailedAuthentication(ClientSocketComponent& socketComponent, sf::Packet& packet);
+    void ClientHandleDeathEvent(ClientSocketComponent& socketCompoment, DeathEventMessage& message);
 };

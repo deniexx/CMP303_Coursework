@@ -79,6 +79,11 @@ struct InputComponent
 	int32_t m_confirmInput = 0;
 };
 
+struct DeleteComponent
+{
+	bool m_markedForDelete = false;
+};
+
 struct InputArray
 {
 	std::vector<InputComponent> m_inputs;
@@ -121,6 +126,8 @@ struct HitComponent
 	sf::Vector2f m_attackSize = sf::Vector2f(48.f, 48.f);
 	double m_lastAttackTime = 0.f;
 	float m_attackCooldown = 0.15f;
+
+	uint8_t m_lastHitterId = -1;
 };
 
 struct ServerSocketComponent
@@ -137,4 +144,9 @@ struct ClientSocketComponent
 	sf::UdpSocket m_udpSocket;
 
 	sf::IpAddress m_fallbackAddress;
+};
+
+struct TextComponent
+{
+	sf::Text text;
 };

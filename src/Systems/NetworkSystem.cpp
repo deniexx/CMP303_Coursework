@@ -1,5 +1,7 @@
 ﻿#include "NetworkSystem.h"
 
+#include <fstream>
+
 #include "SFML/System/Time.hpp"
 
 #include <iostream>
@@ -15,7 +17,7 @@ void NetworkSystem::BeginSystem()
     {
         ServerSocketComponent& serverSocketComponent = GetServerSocketComponent();
     
-        serverSocketComponent.m_tcpListener.listen(28000, "127.0.0.1");
+        serverSocketComponent.m_tcpListener.listen(28000);
         serverSocketComponent.m_tcpListener.setBlocking(false);
         serverSocketComponent.m_udpSocket.setBlocking(false);
     }
@@ -25,7 +27,10 @@ void NetworkSystem::BeginSystem()
         clientSocketComponent.m_tcpSocket.setBlocking(false);
         clientSocketComponent.m_udpSocket.setBlocking(false);
 
-        clientSocketComponent.m_tcpSocket.connect("127.0.0.1", 28000, sf::seconds(5));
+        std::ifstream file("assets/connectionIp.txt");
+        std::string line;
+        getline(file, line);
+        clientSocketComponent.m_tcpSocket.connect(line, 28000, sf::seconds(5));
     }
 }
 
@@ -157,6 +162,7 @@ void NetworkSystem::ServerCheckAuthentication(ServerSocketComponent& socketCompo
             NewPlayerMessage newPlayerMessage;
             newPlayerMessage.m_playerID = playerEntity;
             newPlayerMessage.m_playerName = message.m_playerName;
+            newPlayerMessage.m_playerColor = level->GetComponent<SpriteComponent>(playerEntity).m_sprite.getColor();
             newPlayerMessage.m_playerConnection = client == socket ? (sf::Int8)PlayerConnectionType::ClientLocal : (sf::Int8)PlayerConnectionType::ClientRemote;
             if (socketComponent.m_tcpSockets.size() > 1)
                 newPlayerMessage.m_fallbackAddress = socketComponent.m_tcpSockets[1]->getRemoteAddress().toString();
@@ -180,6 +186,7 @@ void NetworkSystem::ServerCheckAuthentication(ServerSocketComponent& socketCompo
             newPlayerMessage.m_playerID = player;
             newPlayerMessage.m_playerName = level->GetComponent<TagComponent>(player).m_tag;
             newPlayerMessage.m_playerConnection = (sf::Int8)PlayerConnectionType::ClientRemote;
+            newPlayerMessage.m_playerColor = level->GetComponent<SpriteComponent>(player).m_sprite.getColor();
             newPlayerMessage.m_x = comp.m_x;
             newPlayerMessage.m_y = comp.m_y;
             if (socketComponent.m_tcpSockets.size() > 1)
@@ -243,7 +250,7 @@ void NetworkSystem::ServerUpdateHitReg(ServerSocketComponent& socketComponent, s
 
     TransformComponent hitterTrans(message.m_hitterX, message.m_hitterY);
     TransformComponent hitTrans(message.m_hitX, message.m_hitY);
-    NetworkHelpers::ApplyHit(message.m_hitterId, message.m_hitId, hitterTrans, hitTrans);
+    NetworkHelpers::ApplyHit(message.m_hitterId, message.m_hitId, hitterTrans, hitTrans, message.m_hitterId);
     RedistributePacket(socketComponent, client, packet);
 }
 
@@ -304,7 +311,14 @@ void NetworkSystem::ClientReceivePackets(ClientSocketComponent& socketComponent)
                 packet >> message;
                 TransformComponent hitterTrans(message.m_hitterX, message.m_hitterY);
                 TransformComponent hitTrans(message.m_hitX, message.m_hitY);
-                NetworkHelpers::ApplyHit(message.m_hitterId, message.m_hitId, hitterTrans, hitTrans);
+                NetworkHelpers::ApplyHit(message.m_hitterId, message.m_hitId, hitterTrans, hitTrans, message.m_hitterId);
+            }
+            break;
+        case DEATH_EVENTID:
+            {
+                DeathEventMessage message;
+                packet >> message;
+                ClientHandleDeathEvent(socketComponent, message);
             }
             break;
         }
@@ -324,6 +338,7 @@ void NetworkSystem::ClientCheckAuthentication(ClientSocketComponent& socketCompo
         message.m_playerName = "PlayerName";
         packet << message;
         socketComponent.m_tcpSocket.send(packet);
+        Application::Instance->m_hostIp = socketComponent.m_tcpSocket.getRemoteAddress();
     }
     else
     {
@@ -341,6 +356,8 @@ void NetworkSystem::ClientNewPlayerEvent(ClientSocketComponent& socketComponent,
     TransformComponent& transComp = level->GetComponent<TransformComponent>(playerId);
     transComp.m_x = message.m_x;
     transComp.m_y = message.m_y;
+
+    level->GetComponent<SpriteComponent>(playerId).m_sprite.setColor(message.m_playerColor);
 }
 
 void NetworkSystem::ClientProcessInputReceived(ClientSocketComponent& socketComponent, sf::Packet& packet)
@@ -384,4 +401,10 @@ void NetworkSystem::ClientProcessFailedAuthentication(ClientSocketComponent& soc
 
     std::cout << message.reason << '\n';
     socketComponent.m_tcpSocket.disconnect();
+}
+
+void NetworkSystem::ClientHandleDeathEvent(ClientSocketComponent& socketCompoment, DeathEventMessage& message)
+{
+    // @TODO: Update this to add an on screen message for the player that was killed and who killed him
+    NetworkHelpers::KillEntity(message.m_playerId);
 }

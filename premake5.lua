@@ -49,5 +49,7 @@ project "DenisDimitrovCoursework"
 
     filter "configurations:Debug or Release"
     postbuildcommands {
-        "{COPY} %{wks.location}/vendor/SFML/bin/* %{cfg.targetdir}"
+        "{COPY} %{wks.location}/vendor/SFML/bin/* %{cfg.targetdir}",
+        "{COPY} %{wks.location}/assets/* %{cfg.targetdir}/assets"
+
     }

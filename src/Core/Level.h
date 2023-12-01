@@ -19,8 +19,6 @@ public:
 
 	virtual void Begin();
 	virtual void Update(float deltaTime);
-	virtual void ClientUpdate();
-	virtual void ServerUpdate();
 
 	virtual void Render();
 
@@ -135,11 +133,15 @@ public:
 	    EmplaceComponent<TransformComponent>(lastEntityID, 0, 0);
 		EmplaceComponent<TagComponent>(lastEntityID, name);
 		EmplaceComponent<UUIDComponent>(lastEntityID, elapsedTimeClock.getElapsedTime().asMilliseconds());
+		EmplaceComponent<DeleteComponent>(lastEntityID);
 		return lastEntityID;
 	}
 
 	void DestroyEntity(Entity entityID)
 	{
+		if (entityID > 0 && entityID < 7)
+			--playerCount;
+		
 		for (auto& componentMap : m_components) {
 			componentMap.second.erase(entityID);
 		}
@@ -148,17 +150,10 @@ public:
 
 	uint8_t GetLocalPlayerID() const { return localPlayerID; }
 
-private:
-	
-	// @TODO: IDs 1-6(6), will be for players so we should start at 6
-	// @TODO: We will only create players, if the start game has been called, or the server has sent us a create a player event
-	// @TODO: Server/Client server systems that do work on the components
-	// @TODO: Figure out what events should we call and their IDs, make sure they are well defined and get ReplicatedStructs to hold that data!
-	// @TODO: Variable length messages for strings?
-	// @TODO: Maybe figure out more of the game architecture before proceeding
+protected:
 	// @TODO: Figure out animation
-	// ---------------------------- FOR THIS WEEK ----------------------------
-	// @TODO: Possibly implement a second player on the screen
+	
+	// IDs 1-6(6), will be for players so we should start at 6
     // This will be pre-incremented, starting from 1 as 0 will be our networking entity, handling the network messages
     uint8_t lastPlayerID = 0; // Only used on the server
 	uint8_t playerCount = 0; // The number of players, used for some systems

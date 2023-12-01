@@ -16,3 +16,9 @@ enum class PlayerConnectionType : int8_t
     ClientRemote = 2,
     None = 3
 };
+
+enum class GameLevel : int8_t
+{
+    MainMenu = 0,
+    Gameplay = 1
+};

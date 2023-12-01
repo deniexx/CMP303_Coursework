@@ -1,31 +1,11 @@
 #include "Level.h"
 
-#include <iostream>
-
+#include "TextureID.h"
 #include "Application.h"
-#include "../Systems/InputSystem.h"
-#include "../Systems/PhysicsSystem.h"
-#include "../Systems/HitSystem.h"
-#include "../Systems/NetworkSystem.h"
 
 void Level::Begin()
 {
-	m_entities.push_back(NETWORK_ENTITY);
 
-#if DEBUG
-	std::cout << "Server\n";
-	CreatePlayer();
-	EmplaceComponent<ServerSocketComponent>(NETWORK_ENTITY);
-	EmplaceComponent<LastPhysicsState>(NETWORK_ENTITY);
-#else
-	std::cout << "Client\n";
-	EmplaceComponent<ClientSocketComponent>(NETWORK_ENTITY);
-#endif
-
-	AddSystem<NetworkSystem>();
-	AddSystem<InputSystem>();
-	AddSystem<PhysicsSystem>();
-	AddSystem<HitSystem>(); // @TODO: When abstracting this, make sure to only keep the relevant systems we really require
 }
 
 void Level::Update(float deltaTime)
@@ -46,29 +26,39 @@ void Level::Update(float deltaTime)
 			system->SendUpdate();
 		}
 	}
-}
 
-void Level::ClientUpdate()
-{
-
-}
-
-void Level::ServerUpdate()
-{
-
+	for (int i = m_entities.size() - 1; i >= 0; --i)
+	{
+		if (!HasComponent<DeleteComponent>(m_entities[i])) continue;
+		
+		DeleteComponent& comp = GetComponent<DeleteComponent>(m_entities[i]);
+		if (comp.m_markedForDelete)
+		{
+			DestroyEntity(m_entities[i]);
+		}
+	}
 }
 
 void Level::Render()
 {
 	for (auto entity : m_entities)
 	{
-		if (!HasComponent<SpriteComponent>(entity)) continue;
-		
-		SpriteComponent& comp = GetComponent<SpriteComponent>(entity);
-		TransformComponent& transform = GetComponent<TransformComponent>(entity);
-		comp.m_sprite.setPosition(transform.m_x, transform.m_y);
-		
-		Application::Instance->m_window->draw(comp.m_sprite);
+		if (HasComponent<SpriteComponent>(entity))
+		{		
+			SpriteComponent& comp = GetComponent<SpriteComponent>(entity);
+			TransformComponent& transform = GetComponent<TransformComponent>(entity);
+			comp.m_sprite.setPosition(transform.m_x, transform.m_y);
+			
+			Application::Instance->m_window->draw(comp.m_sprite);
+		}
+		if (HasComponent<TextComponent>(entity))
+		{
+			TextComponent& comp = GetComponent<TextComponent>(entity);
+			TransformComponent& transform = GetComponent<TransformComponent>(entity);
+			comp.text.setPosition(transform.m_x, transform.m_y);
+
+			Application::Instance->m_window->draw(comp.text);
+		}
 	}
 }
 
@@ -123,6 +113,7 @@ Entity Level::CreatePlayer(int playerID, std::string name, bool localPlayer)
 	EmplaceComponent<MovementComponent>(internalPID);
 	EmplaceComponent<HitComponent>(internalPID);
 	EmplaceComponent<InputArray>(internalPID);
+	EmplaceComponent<DeleteComponent>(internalPID);
 	PlayerConnectionType type;
 
 	if (isServer && internalPID == 1) // this means we are the server, since he'll always be entity 1
@@ -143,12 +134,12 @@ Entity Level::CreatePlayer(int playerID, std::string name, bool localPlayer)
 	EmplaceComponent<InputComponent>(internalPID);
 	EmplaceComponent<NetworkPlayerComponent>(internalPID, type);
 
-	/* TEMPORARY*/
 	EmplaceComponent<SpriteComponent>(internalPID, sf::Color::Black);
 	SpriteComponent& comp = GetComponent<SpriteComponent>(internalPID);
-	sf::Texture texture;
-	texture.create(32, 32);
-	comp.m_sprite.setTexture(texture, true);
+	
+	comp.m_sprite.setTexture(Application::Instance->m_textureRegister[rahmiTexID], true);
+	if (isServer)
+		comp.m_sprite.setColor(sf::Color(rand() % 255, rand() % 255, rand() % 255));
 	return internalPID;
 }
 #pragma endregion Noise

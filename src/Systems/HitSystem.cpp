@@ -42,7 +42,7 @@ void HitSystem::UpdateSystem(float deltaTime)
 				{
 					TransformComponent& hitTransComp = level->GetComponent<TransformComponent>(inPlayer);
 
-					if (!NetworkHelpers::ApplyHit(player, inPlayer, pTransComp, hitTransComp)) assert(false);
+					if (!NetworkHelpers::ApplyHit(player, inPlayer, pTransComp, hitTransComp, inPlayer)) assert(false);
 									
 					if (level->IsServer())
 					{

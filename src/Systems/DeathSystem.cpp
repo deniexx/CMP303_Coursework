@@ -51,7 +51,7 @@ void DeathSystem::UpdateSystem(float deltaTime)
         }
 
         ServerSocketComponent& socketComp = level->GetComponent<ServerSocketComponent>(NETWORK_ENTITY);
-        for (sf::TcpSocket* socket : socketComp.m_tcpSockets)
+        for (auto& socket : socketComp.m_tcpSockets)
         {
             socket->send(packet);
         }

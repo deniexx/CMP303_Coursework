@@ -112,7 +112,7 @@ void InputSystem::SendUpdate()
     {
         ServerSocketComponent& socketComponent = level->GetComponent<ServerSocketComponent>(NETWORK_ENTITY);
 
-        for (sf::TcpSocket* socket : socketComponent.m_tcpSockets)
+        for (auto& socket : socketComponent.m_tcpSockets)
         {
             socket->send(packet);
         }

@@ -10,6 +10,8 @@ void MainMenuSystem::BeginSystem()
 
 void MainMenuSystem::UpdateSystem(float deltaTime)
 {
+    if (!Application::Instance->IsFocused()) return;
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::H))
     {
         Application::Instance->m_isServer = true;

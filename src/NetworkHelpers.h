@@ -65,4 +65,33 @@ namespace NetworkHelpers
     	// @TODO: Add a check if the local player has died and if that is the case show a message on the screen
     	deleteComp.m_markedForDelete = true;
     }
+
+	static std::string EventToString(uint8_t eventId)
+	{
+		switch (eventId)
+		{
+		case 0:
+			return "New Player Event\n";
+		case 1:
+			return "Physics Update Event\n";
+		case 2:
+			return "Input Update Event\n";
+		case 3:
+			return "HitReg Event\n";
+		case 4:
+			return "Death Event\n";
+		case 5:
+			return "Player Left Event\n";
+		case 252:
+			return "ERROR Event\n";
+		case 253:
+			return "Ping Event\n";
+		case 254:
+			return "Failed Authentication Event\n";
+		case 255:
+			return "Authentication Event\n";
+		}
+
+		return "Event not found!";
+	}
 };

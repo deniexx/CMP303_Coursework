@@ -2,14 +2,16 @@
 
 #include "TextureID.h"
 #include "Application.h"
+#include "../Messages/Messages.h"
 
 void Level::Begin()
 {
-
+	gameTime = 0.f;
 }
 
 void Level::Update(float deltaTime)
 {
+	gameTime += deltaTime;
 	// Update systems first
 	for (auto& system : m_systems)
 	{
@@ -78,6 +80,12 @@ bool Level::IsLocalPlayer()
 	return IsEntityLocalPlayer(localPlayerID);
 }
 
+float Level::GetGameTime()
+{
+	return gameTime;
+}
+
+
 bool Level::IsEntityLocalPlayer(Entity entity)
 {
 	if (!HasComponent<NetworkPlayerComponent>(entity))
@@ -141,5 +149,32 @@ Entity Level::CreatePlayer(int playerID, std::string name, bool localPlayer)
 	if (isServer)
 		comp.m_sprite.setColor(sf::Color(rand() % 255, rand() % 255, rand() % 255));
 	return internalPID;
+}
+void Level::DisconnectLocalPlayer()
+{
+	if (IsServer())
+	{
+		// Host left
+		sf::Packet error;
+		error << ERROR_EVENTID;
+		error << "Host has left the game!";
+
+		ServerSocketComponent& socketComp = GetComponent<ServerSocketComponent>(NETWORK_ENTITY);
+
+		for (auto& socket : socketComp.m_tcpSockets)
+		{
+			socket->send(error);
+		}
+
+	}
+	else
+	{
+		sf::Packet packet;
+		packet << PLAYERLEFT_EVENTID;
+		packet << GetLocalPlayerID();
+
+		ClientSocketComponent& socketComp = GetComponent<ClientSocketComponent>(NETWORK_ENTITY);
+		socketComp.m_tcpSocket.send(packet);
+	}
 }
 #pragma endregion Noise

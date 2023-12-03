@@ -29,7 +29,11 @@ public:
 	bool IsLocalPlayer();
 	bool IsEntityLocalPlayer(Entity entity);
 
+	float GetGameTime();
+
 private:
+
+	float gameTime;
 	
 	sf::Clock elapsedTimeClock;
 	std::unordered_map<ISystem*, float> lastUpdatedSystemFrame;
@@ -149,6 +153,8 @@ public:
 	}
 
 	uint8_t GetLocalPlayerID() const { return localPlayerID; }
+
+	void DisconnectLocalPlayer();
 
 protected:
 	// @TODO: Figure out animation

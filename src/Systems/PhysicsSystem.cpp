@@ -97,8 +97,8 @@ void PhysicsSystem::SendUpdate()
 
         if (update)
         {
-            const ServerSocketComponent& serverSocketComponent = level->GetComponent<ServerSocketComponent>(NETWORK_ENTITY);
-            for (sf::TcpSocket* socket : serverSocketComponent.m_tcpSockets)
+            ServerSocketComponent& serverSocketComponent = level->GetComponent<ServerSocketComponent>(NETWORK_ENTITY);
+            for (TCPSocket& socket : serverSocketComponent.m_tcpSockets)
             {
                 socket->send(packet);
             }

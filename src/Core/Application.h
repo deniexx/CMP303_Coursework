@@ -23,17 +23,18 @@ public:
 
 	sf::Vector2u GetWindowSize();
 
-	sf::IpAddress m_hostIp;
 	bool m_isServer;
 
 	std::unordered_map<uint32_t, sf::Texture> m_textureRegister;
 	sf::Font m_font;
+
+	std::string m_errorMessage = "";
 	
 	/* Update Loops*/
 private:
 
-	GameLevel currentGameLevel = GameLevel::MainMenu;
-	GameLevel desiredGameLevel = GameLevel::MainMenu;
+	GameLevel m_currentGameLevel = GameLevel::MainMenu;
+	GameLevel m_desiredGameLevel = GameLevel::MainMenu;
 
 	std::shared_ptr<sf::RenderWindow> m_window;
 

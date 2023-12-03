@@ -29,10 +29,10 @@ void Application::StartUp()
 		m_currentLevel->Render();
 		m_window->display();
 
-		if (currentGameLevel != desiredGameLevel)
+		if (m_currentGameLevel != m_desiredGameLevel)
 		{
-			currentGameLevel = desiredGameLevel;
-			if (currentGameLevel == GameLevel::MainMenu)
+			m_currentGameLevel = m_desiredGameLevel;
+			if (m_currentGameLevel == GameLevel::MainMenu)
 			{
 				m_currentLevel = std::make_shared<MainMenuLevel>();
 				m_currentLevel->Begin();
@@ -59,7 +59,7 @@ bool Application::IsFocused() const
 
 void Application::SwitchLevel(GameLevel newLevel)
 {
-	desiredGameLevel = newLevel;
+	m_desiredGameLevel = newLevel;
 }
 
 sf::Vector2u Application::GetWindowSize()
@@ -80,7 +80,10 @@ void Application::PollEvents(std::shared_ptr<sf::RenderWindow> window)
 		case sf::Event::KeyPressed:
 				// @TODO: Add a key pressed event response (input component)
 				if (currentEvent.key.scancode == sf::Keyboard::Scancode::Escape)
+				{
+					m_currentLevel->DisconnectLocalPlayer();
 					exit(0);
+				}
 				break;
 			case sf::Event::KeyReleased:
 				// @TODO: Add a key released event response (input component)

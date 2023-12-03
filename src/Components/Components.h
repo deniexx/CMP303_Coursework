@@ -130,11 +130,43 @@ struct HitComponent
 	uint8_t m_lastHitterId = -1;
 };
 
+struct TCPSocket
+{
+	sf::TcpSocket* m_tcpSocket;
+	bool m_waitingForResponse = false;
+	uint64_t m_lastUpdateTime = 0;
+
+	sf::TcpSocket* operator->()
+	{
+		return m_tcpSocket;
+	}
+
+	sf::TcpSocket& operator*()
+	{
+		return *m_tcpSocket;
+	}
+
+	bool operator==(TCPSocket& other)
+	{
+		return m_tcpSocket == other.m_tcpSocket;
+	}
+
+	bool operator==(const TCPSocket& other)
+	{
+		return m_tcpSocket == other.m_tcpSocket;
+	}
+
+	bool operator<(TCPSocket& other)
+	{
+		return m_tcpSocket < other.m_tcpSocket;
+	}
+};
+
 struct ServerSocketComponent
 {
 	sf::TcpListener m_tcpListener;
 	sf::SocketSelector m_socketSelector;
-	std::vector<sf::TcpSocket*> m_tcpSockets;
+	std::vector<TCPSocket> m_tcpSockets;
 	sf::UdpSocket m_udpSocket;
 };
 
@@ -142,8 +174,6 @@ struct ClientSocketComponent
 {
 	sf::TcpSocket m_tcpSocket;
 	sf::UdpSocket m_udpSocket;
-
-	sf::IpAddress m_fallbackAddress;
 };
 
 struct TextComponent

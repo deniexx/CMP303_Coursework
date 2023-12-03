@@ -28,8 +28,8 @@ void GameplayLevel::Begin()
         EmplaceComponent<ClientSocketComponent>(NETWORK_ENTITY);
     }
 
-    AddSystem<InputSystem>();
     AddSystem<NetworkSystem>();
+    AddSystem<InputSystem>();
     AddSystem<PhysicsSystem>();
     AddSystem<HitSystem>();
     AddSystem<DeathSystem>();

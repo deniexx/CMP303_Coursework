@@ -78,7 +78,6 @@ void Application::PollEvents(std::shared_ptr<sf::RenderWindow> window)
 				window->close();
 				break;
 		case sf::Event::KeyPressed:
-				// @TODO: Add a key pressed event response (input component)
 				if (currentEvent.key.scancode == sf::Keyboard::Scancode::Escape)
 				{
 					m_currentLevel->DisconnectLocalPlayer();

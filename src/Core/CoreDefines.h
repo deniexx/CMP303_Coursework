@@ -3,11 +3,11 @@
 #include <cstdint>
 
 typedef uint32_t Entity;
-
+ 
 #define NETWORK_ENTITY 0
 #define ACCEPTABLE_POSITION_DELTA 100.f
-#define AUTHENTICATION_MESSAGE_SERVER "Alehandro"
-#define AUTHENTICATION_MESSAGE_CLIENT "Ruzmarin"
+#define AUTHENTICATION_MESSAGE_SERVER "1224MaikalRoko"
+#define AUTHENTICATION_MESSAGE_CLIENT "ShtukuRukuMaruku"
 
 enum class PlayerConnectionType : int8_t
 {

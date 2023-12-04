@@ -32,6 +32,7 @@ void NetworkSystem::BeginSystem()
         std::string line;
         getline(file, line);
         clientSocketComponent.m_tcpSocket.connect(line, 28000, sf::seconds(5));
+        file.close();
     }
 }
 
@@ -459,7 +460,7 @@ void NetworkSystem::ClientCheckAuthentication(ClientSocketComponent& socketCompo
 
         AuthenticationMessage message;
         message.m_authenticationMessage = AUTHENTICATION_MESSAGE_CLIENT;
-        message.m_playerName = "PlayerName";
+        message.m_playerName = Application::Instance->m_playerName;
         packet << message;
         socketComponent.m_tcpSocket.send(packet);
     }
@@ -541,7 +542,19 @@ void NetworkSystem::ClientProcessFailedAuthentication(ClientSocketComponent& soc
 
 void NetworkSystem::ClientHandleDeathEvent(ClientSocketComponent& socketCompoment, DeathEventMessage& message)
 {
-    // @TODO: Update this to add an on screen message for the player that was killed and who killed him
+    Level* level = Application::Instance->GetCurrentLevel().get();
+    if (message.m_playerId == level->GetLocalPlayerID())
+    {
+        Entity ent = level->CreateEntity();
+        TextComponent& text = level->EmplaceComponent<TextComponent>(ent);
+        text.text.setString("You died!");
+        text.text.setFont(Application::Instance->m_font);
+        text.text.setColor(sf::Color(255, 0, 0));
+        TransformComponent& t = level->GetComponent<TransformComponent>(ent);
+        t.m_x = (1280 / 2) - 64;
+        t.m_y = 180.f;
+    }
+
     NetworkHelpers::KillEntity(message.m_playerId);
 }
 

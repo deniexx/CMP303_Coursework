@@ -1,5 +1,6 @@
 #include "Application.h"
 
+#include <fstream>
 #include "MainMenuLevel.h"
 #include "TextureID.h"
 #include "../Systems/GameplayLevel.h"
@@ -15,6 +16,9 @@ void Application::StartUp()
 
 	m_window->setFramerateLimit(60);
 	m_window->setVerticalSyncEnabled(false);
+
+	std::ifstream file("assets/playerName.txt");
+	getline(file, m_playerName);
 
 	m_currentLevel = std::make_shared<MainMenuLevel>();
 	m_currentLevel->Begin();

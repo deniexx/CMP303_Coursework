@@ -58,6 +58,7 @@ void Level::Render()
 			TextComponent& comp = GetComponent<TextComponent>(entity);
 			TransformComponent& transform = GetComponent<TransformComponent>(entity);
 			comp.text.setPosition(transform.m_x, transform.m_y);
+			comp.text.move(comp.offset.x, comp.offset.y);
 
 			Application::Instance->m_window->draw(comp.text);
 		}
@@ -116,7 +117,7 @@ Entity Level::CreatePlayer(int playerID, std::string name, bool localPlayer)
 	++playerCount;
 	m_entities.push_back(internalPID);
 	EmplaceComponent<TransformComponent>(internalPID, 0, 0);
-	EmplaceComponent<TagComponent>(internalPID, name);
+	TagComponent& tag = EmplaceComponent<TagComponent>(internalPID, name);
 	EmplaceComponent<UUIDComponent>(internalPID, elapsedTimeClock.getElapsedTime().asMilliseconds());
 	EmplaceComponent<MovementComponent>(internalPID);
 	EmplaceComponent<HitComponent>(internalPID);
@@ -141,11 +142,19 @@ Entity Level::CreatePlayer(int playerID, std::string name, bool localPlayer)
 
 	EmplaceComponent<InputComponent>(internalPID);
 	EmplaceComponent<NetworkPlayerComponent>(internalPID, type);
-
 	EmplaceComponent<SpriteComponent>(internalPID, sf::Color::Black);
 	SpriteComponent& comp = GetComponent<SpriteComponent>(internalPID);
-	
 	comp.m_sprite.setTexture(Application::Instance->m_textureRegister[rahmiTexID], true);
+	
+	TextComponent& textComp = EmplaceComponent<TextComponent>(internalPID);
+	textComp.text.setString(tag.m_tag);
+	textComp.text.setFont(Application::Instance->m_font);
+	textComp.text.setCharacterSize(18);
+	textComp.offset.y = -18.f;
+	float spriteHalfWidth = comp.m_sprite.getLocalBounds().width / 2;
+	sf::FloatRect rect = textComp.text.getGlobalBounds();
+	textComp.text.setOrigin((rect.left + rect.width * 0.5f) - spriteHalfWidth, 0.f);
+
 	if (isServer)
 		comp.m_sprite.setColor(sf::Color(rand() % 255, rand() % 255, rand() % 255));
 	return internalPID;

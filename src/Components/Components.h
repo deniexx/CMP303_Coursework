@@ -179,4 +179,5 @@ struct ClientSocketComponent
 struct TextComponent
 {
 	sf::Text text;
+	sf::Vector2f offset = sf::Vector2f(0.f, 0.f);
 };

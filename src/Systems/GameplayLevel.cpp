@@ -18,7 +18,7 @@ void GameplayLevel::Begin()
     if (Application::Instance->m_isServer)
     {
         std::cout << "Server\n";
-        CreatePlayer();
+        CreatePlayer(-1, Application::Instance->m_playerName);
         EmplaceComponent<ServerSocketComponent>(NETWORK_ENTITY);
         EmplaceComponent<LastPhysicsState>(NETWORK_ENTITY);
     }

@@ -459,7 +459,7 @@ void NetworkSystem::ClientCheckAuthentication(ClientSocketComponent& socketCompo
 
         AuthenticationMessage message;
         message.m_authenticationMessage = AUTHENTICATION_MESSAGE_CLIENT;
-        message.m_playerName = "PlayerName";
+        message.m_playerName = Application::Instance->m_playerName;
         packet << message;
         socketComponent.m_tcpSocket.send(packet);
     }

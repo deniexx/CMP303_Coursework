@@ -29,6 +29,18 @@ void DeathSystem::UpdateSystem(float deltaTime)
             TransformComponent& trans = level->GetComponent<TransformComponent>(player);
             if (IsPlayerOutOfBounds(trans))
             {
+                if (level->GetLocalPlayerID() == player)
+                {
+                    Entity ent = level->CreateEntity();
+                    TextComponent& text = level->EmplaceComponent<TextComponent>(ent);
+                    text.text.setString("You died!");
+                    text.text.setFont(Application::Instance->m_font);
+                    text.text.setColor(sf::Color(255, 0, 0));
+                    TransformComponent& t = level->GetComponent<TransformComponent>(ent);
+                    t.m_x = (1280 / 2) - 64;
+                    t.m_y = 180.f;
+                }
+
                 HitComponent& hitComp = level->GetComponent<HitComponent>(player);
 
                 DeathEventMessage m;

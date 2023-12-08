@@ -3,13 +3,17 @@
 #include <fstream>
 #include "MainMenuLevel.h"
 #include "TextureID.h"
-#include "../Systems/GameplayLevel.h"
+#include "../Core/GameplayLevel.h"
+#include <fstream>
 
 void Application::StartUp()
 {
 	Instance = this;
 	FillTextureRegister();
 	m_font.loadFromFile("assets/6809chargen.ttf");
+	std::ifstream f("assets/playerName.txt");
+	getline(f, Application::Instance->m_playerName);
+	f.close();
 
 	m_window = std::make_shared<sf::RenderWindow>(sf::VideoMode(1280, 720), "Alehandro Mix");
 	sf::Clock deltaClock;

@@ -94,7 +94,8 @@ void NetworkSystem::ServerCheckConnections(ServerSocketComponent& socketComponen
         if (i < socketComponent.m_tcpSockets.size() && socketComponent.m_tcpSockets[i].m_waitingForResponse)
         {
             socketComponent.m_tcpSockets[i].m_waitingForResponse = false;
-            if (level->GetGameTime() - socketComponent.m_tcpSockets[i].m_lastUpdateTime > MAX_PING_ALLOWED)
+            // Multiply by 2 to account for round-trip time
+            if (level->GetGameTime() - socketComponent.m_tcpSockets[i].m_lastUpdateTime > MAX_PING_ALLOWED * 2.f)
             {
                 sf::Packet packet;
                 packet << ERROR_EVENTID;
@@ -337,11 +338,12 @@ void NetworkSystem::ServerHandlePingEvent(ServerSocketComponent& socketComponent
 	socketComponent.m_tcpSockets[i].m_waitingForResponse = false;
     float gameTime = socketComponent.m_tcpSockets[i].m_lastUpdateTime;
 
-    if (level->GetGameTime() - gameTime > MAX_PING_ALLOWED)
+    // Multiply by 2 to account for round-trip time
+    if (level->GetGameTime() - gameTime > MAX_PING_ALLOWED * 2.f)
     {
 		sf::Packet packet;
 		packet << ERROR_EVENTID;
-		std::string errorMessage = "More ping than allowed!";
+		std::string errorMessage = "More ping than allowed (Ping Event)!";
 		packet << errorMessage;
 		socketComponent.m_tcpSockets[i]->send(packet);
 

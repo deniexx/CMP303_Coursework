@@ -29,10 +29,7 @@ public:
 	sf::Font m_font;
 
 	std::string m_errorMessage = "";
-<<<<<<< HEAD
 
-=======
->>>>>>> 0b187b06c71657d6b5d6142e1c5bba031ea0a4a4
 	std::string m_playerName = "";
 	
 	/* Update Loops*/

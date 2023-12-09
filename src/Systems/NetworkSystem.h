@@ -9,7 +9,7 @@ struct PhysicsUpdateMessage;
 struct NewPlayerMessage;
 struct TCPSocket;
 
-#define MAX_PING_ALLOWED 0.256f
+#define MAX_PING_ALLOWED 0.512f
 
 namespace sf
 {

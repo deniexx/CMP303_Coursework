@@ -11,8 +11,6 @@ static const uint8_t INPUTUPDATE_EVENTID = 2;
 static const uint8_t HITREG_EVENTID = 3;
 static const uint8_t DEATH_EVENTID = 4;
 static const uint8_t PLAYERLEFT_EVENTID = 5;
-
-
 static const uint8_t ERROR_EVENTID = 252;
 static const uint8_t PING_EVENTID = 253;
 static const uint8_t FAILEDAUTHENTICATION_EVENTID = 254;
